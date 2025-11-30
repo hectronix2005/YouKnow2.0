@@ -1,0 +1,160 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          String    @default("student") // student, instructor, admin, super_admin
+  avatar        String?
+  xp            Int       @default(0)
+  level         Int       @default(1)
+  streak        Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastActiveAt  DateTime  @default(now())
+  
+  // Relations
+  coursesCreated Course[]  @relation("InstructorCourses")
+  enrollments    Enrollment[]
+  progress       LessonProgress[]
+  achievements   Achievement[]
+}
+
+model Course {
+  id              String    @id @default(uuid())
+  title           String
+  subtitle        String?
+  description     String
+  slug            String    @unique
+  category        String
+  level           String    // beginner, intermediate, advanced
+  thumbnail       String?
+  price           Float     @default(0)
+  isFree          Boolean   @default(true)
+  status          String    @default("draft") // draft, published
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  instructorId    String
+  instructor      User      @relation("InstructorCourses", fields: [instructorId], references: [id])
+  
+  // Relations
+  modules         Module[]
+  enrollments     Enrollment[]
+}
+
+model Module {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  orderIndex  Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id                  String    @id @default(uuid())
+  title               String
+  description         String?
+  orderIndex          Int
+  lessonType          String    // video, article, quiz
+  videoUrl            String?
+  videoDuration       Int?      // seconds
+  articleContent      String?
+  isPreview           Boolean   @default(false)
+  transcription       String?   // Full transcription/subtitles text
+  transcriptSegments  String?   // JSON string of segments with timestamps
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  moduleId            String
+  module              Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  // Relations
+  progress            LessonProgress[]
+}
+
+model Enrollment {
+  id                String    @id @default(uuid())
+  progressPercent   Float     @default(0)
+  completedLessons  Int       @default(0)
+  status            String    @default("active") // active, completed
+  enrolledAt        DateTime  @default(now())
+  completedAt       DateTime?
+  lastAccessedAt    DateTime  @default(now())
+  
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  
+  courseId          String
+  course            Course    @relation(fields: [courseId], references: [id])
+  
+  @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id              String    @id @default(uuid())
+  isCompleted     Boolean   @default(false)
+  watchTime       Int       @default(0) // seconds
+  lastPosition    Int       @default(0) // seconds
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  lastAccessedAt  DateTime  @default(now())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  lessonId        String
+  lesson          Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, lessonId])
+}
+
+model Achievement {
+  id              String    @id @default(uuid())
+  type            String    // first_lesson, 7_day_streak, course_completer, etc.
+  earnedAt        DateTime  @default(now())
+
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model LessonQuiz {
+  id              String    @id @default(uuid())
+  lessonId        String    @unique
+  questions       String    // JSON array of quiz questions
+  generatedAt     DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  attempts        QuizAttempt[]
+}
+
+model QuizAttempt {
+  id              String    @id @default(uuid())
+  lessonQuizId    String
+  lessonQuiz      LessonQuiz @relation(fields: [lessonQuizId], references: [id], onDelete: Cascade)
+  userId          String
+  score           Int       // 0-100
+  correctAnswers  Int
+  totalQuestions  Int
+  answers         String    // JSON of user answers
+  completedAt     DateTime  @default(now())
+  timeSpent       Int       // seconds
+}
