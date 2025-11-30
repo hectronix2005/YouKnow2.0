@@ -29,7 +29,7 @@ export function CourseEditor({ course }: CourseEditorProps) {
     const [hasChanges, setHasChanges] = useState(false)
     const [courseStatus, setCourseStatus] = useState(course.status)
     const [isPublishing, setIsPublishing] = useState(false)
-    const [quizEditorLesson, setQuizEditorLesson] = useState<{id: string, title: string} | null>(null)
+    const [quizEditorLesson, setQuizEditorLesson] = useState<{ id: string, title: string } | null>(null)
 
     const toggleLessonExpanded = (lessonId: string) => {
         const newExpanded = new Set(expandedLessons)
@@ -176,11 +176,10 @@ export function CourseEditor({ course }: CourseEditorProps) {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                         Edit Course
                     </h1>
-                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${
-                        courseStatus === 'published'
+                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${courseStatus === 'published'
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                             : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                    }`}>
+                        }`}>
                         {courseStatus === 'published' ? 'Publicado' : 'Borrador'}
                     </span>
                 </div>
@@ -521,7 +520,6 @@ export function CourseEditor({ course }: CourseEditorProps) {
                             <QuizEditor
                                 lessonId={quizEditorLesson.id}
                                 lessonTitle={quizEditorLesson.title}
-                                hasTranscription={true}
                                 onClose={() => setQuizEditorLesson(null)}
                             />
                         </div>
