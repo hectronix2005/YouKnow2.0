@@ -9,7 +9,8 @@ Una plataforma e-learning moderna construida con Next.js 14, TypeScript, Prisma 
 - ✅ **Gestión de cursos** (CRUD completo)
 - ✅ **Estructura jerárquica** (Cursos → Módulos → Lecciones)
 - ✅ **Sistema de progreso** para estudiantes
-- ✅ **Roles de usuario** (Student, Instructor, Admin)
+- ✅ **Roles de usuario** (Student, Instructor, Admin, Super Admin)
+- ✅ **Sistema de gestión de usuarios** para administradores
 - ✅ **Base de datos** con Prisma + SQLite
 
 ### UI/UX
@@ -60,15 +61,25 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 - **Email:** instructor@learnflow.com
 - **Password:** password123
 
+### Admin
+- **Email:** admin@learnflow.com
+- **Password:** password123
+
+### Super Admin
+- **Email:** superadmin@learnflow.com
+- **Password:** password123
+
 ## 📁 Estructura del Proyecto
 
 ```
 learnflow-ai/
 ├── app/                      # Next.js App Router
 │   ├── api/                 # API routes
-│   │   └── auth/           # NextAuth endpoints
+│   │   ├── auth/           # NextAuth endpoints
+│   │   └── admin/          # Admin endpoints
 │   ├── (auth)/             # Auth pages (login, register)
 │   ├── (dashboard)/        # Protected student routes
+│   │   └── admin/          # Admin panel
 │   └── (instructor)/       # Protected instructor routes
 ├── components/              # React components
 │   ├── ui/                 # Base UI components
@@ -77,6 +88,7 @@ learnflow-ai/
 ├── lib/                     # Utilities
 │   ├── auth.ts             # NextAuth configuration
 │   ├── db.ts               # Prisma client
+│   ├── teacher.ts          # Role helpers
 │   └── utils.ts            # Helper functions
 ├── prisma/                  # Database
 │   ├── schema.prisma       # Database schema
@@ -90,7 +102,7 @@ learnflow-ai/
 
 ### Entidades Principales
 
-- **User**: Usuarios del sistema (students, instructors, admins)
+- **User**: Usuarios del sistema (students, instructors, admins, super_admins)
 - **Course**: Cursos disponibles
 - **Module**: Módulos dentro de un curso
 - **Lesson**: Lecciones dentro de un módulo
@@ -191,3 +203,4 @@ MIT License - ver archivo LICENSE para detalles
 ---
 
 **Desarrollado con ❤️ usando Next.js 14 y TypeScript**
+
