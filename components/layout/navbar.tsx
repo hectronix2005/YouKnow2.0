@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Home, User, LogOut, GraduationCap, Globe, ShieldCheck } from "lucide-react"
+import { BookOpen, Home, User, LogOut, GraduationCap, Globe, ShieldCheck, CheckSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
 import {
@@ -65,6 +65,17 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 >
                                     <BookOpen className="mr-2 h-4 w-4" />
                                     {t.nav.courses}
+                                </Button>
+                            </Link>
+
+                            <Link href="/checklist">
+                                <Button
+                                    variant={isActive("/checklist") ? "secondary" : "ghost"}
+                                    size="sm"
+                                    className={isActive("/checklist") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                >
+                                    <CheckSquare className="mr-2 h-4 w-4" />
+                                    {t.nav.checklist}
                                 </Button>
                             </Link>
 
