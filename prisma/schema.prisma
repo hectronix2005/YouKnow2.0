@@ -4,12 +4,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   email         String    @unique
   password      String
   name          String
@@ -21,7 +21,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastActiveAt  DateTime  @default(now())
-  
+
   // Relations
   coursesCreated Course[]  @relation("InstructorCourses")
   enrollments    Enrollment[]
@@ -30,7 +30,7 @@ model User {
 }
 
 model Course {
-  id              String    @id @default(uuid())
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
   title           String
   subtitle        String?
   description     String
@@ -44,32 +44,32 @@ model Course {
   publishedAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  
-  instructorId    String
+
+  instructorId    String    @db.ObjectId
   instructor      User      @relation("InstructorCourses", fields: [instructorId], references: [id])
-  
+
   // Relations
   modules         Module[]
   enrollments     Enrollment[]
 }
 
 model Module {
-  id          String    @id @default(uuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   orderIndex  Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
-  courseId    String
+
+  courseId    String    @db.ObjectId
   course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
+
   // Relations
   lessons     Lesson[]
 }
 
 model Lesson {
-  id                  String    @id @default(uuid())
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
   title               String
   description         String?
   orderIndex          Int
@@ -83,7 +83,7 @@ model Lesson {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  moduleId            String
+  moduleId            String    @db.ObjectId
   module              Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   // Relations
@@ -91,52 +91,52 @@ model Lesson {
 }
 
 model Enrollment {
-  id                String    @id @default(uuid())
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
   progressPercent   Float     @default(0)
   completedLessons  Int       @default(0)
   status            String    @default("active") // active, completed
   enrolledAt        DateTime  @default(now())
   completedAt       DateTime?
   lastAccessedAt    DateTime  @default(now())
-  
-  userId            String
+
+  userId            String    @db.ObjectId
   user              User      @relation(fields: [userId], references: [id])
-  
-  courseId          String
+
+  courseId          String    @db.ObjectId
   course            Course    @relation(fields: [courseId], references: [id])
-  
+
   @@unique([userId, courseId])
 }
 
 model LessonProgress {
-  id              String    @id @default(uuid())
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
   isCompleted     Boolean   @default(false)
   watchTime       Int       @default(0) // seconds
   lastPosition    Int       @default(0) // seconds
   startedAt       DateTime  @default(now())
   completedAt     DateTime?
   lastAccessedAt  DateTime  @default(now())
-  
-  userId          String
+
+  userId          String    @db.ObjectId
   user            User      @relation(fields: [userId], references: [id])
-  
-  lessonId        String
+
+  lessonId        String    @db.ObjectId
   lesson          Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
+
   @@unique([userId, lessonId])
 }
 
 model Achievement {
-  id              String    @id @default(uuid())
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
   type            String    // first_lesson, 7_day_streak, course_completer, etc.
   earnedAt        DateTime  @default(now())
 
-  userId          String
+  userId          String    @db.ObjectId
   user            User      @relation(fields: [userId], references: [id])
 }
 
 model LessonQuiz {
-  id              String    @id @default(uuid())
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
   lessonId        String    @unique
   questions       String    // JSON array of quiz questions
   generatedAt     DateTime  @default(now())
@@ -147,8 +147,8 @@ model LessonQuiz {
 }
 
 model QuizAttempt {
-  id              String    @id @default(uuid())
-  lessonQuizId    String
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  lessonQuizId    String    @db.ObjectId
   lessonQuiz      LessonQuiz @relation(fields: [lessonQuizId], references: [id], onDelete: Cascade)
   userId          String
   score           Int       // 0-100

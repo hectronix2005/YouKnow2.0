@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "heroku-postbuild": "prisma generate && prisma db push && npm run build",
+    "heroku-postbuild": "prisma generate && npm run build",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "npx prisma db push --force-reset && tsx prisma/seed.ts"
   },
