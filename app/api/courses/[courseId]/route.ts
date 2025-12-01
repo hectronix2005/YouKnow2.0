@@ -39,16 +39,46 @@ export async function PATCH(
             }
         })
 
-        // Handle modules and lessons
-        // For MVP simplicity, we'll delete existing structure and recreate
-        // In production, we should do smart diffing
+        // Handle modules and lessons with quiz preservation
+        // Get existing lessons and their quizzes before deleting
+        const existingModules = await prisma.module.findMany({
+            where: { courseId },
+            include: { lessons: true }
+        })
 
-        // 1. Delete existing modules (cascade deletes lessons)
+        // Map old lesson IDs to their quizzes
+        const existingLessonIds = existingModules.flatMap(m => m.lessons.map(l => l.id))
+
+        // Get quizzes for existing lessons
+        const existingQuizzes = await prisma.lessonQuiz.findMany({
+            where: { lessonId: { in: existingLessonIds } }
+        })
+
+        // Create a map of lesson title -> quiz for preservation
+        const quizByLessonTitle = new Map<string, { id: string; questions: string }>()
+        for (const module of existingModules) {
+            for (const lesson of module.lessons) {
+                const quiz = existingQuizzes.find(q => q.lessonId === lesson.id)
+                if (quiz) {
+                    // Use title as key since IDs will change
+                    quizByLessonTitle.set(lesson.title, { id: quiz.id, questions: quiz.questions })
+                }
+            }
+        }
+
+        // Delete existing quizzes (they'll be reassociated)
+        if (existingLessonIds.length > 0) {
+            await prisma.lessonQuiz.deleteMany({
+                where: { lessonId: { in: existingLessonIds } }
+            })
+        }
+
+        // Delete existing modules (cascade deletes lessons)
         await prisma.module.deleteMany({
             where: { courseId }
         })
 
-        // 2. Create new structure
+        // Create new structure and preserve quizzes
         for (let i = 0; i < modules.length; i++) {
             const moduleData = modules[i]
             const createdModule = await prisma.module.create({
@@ -62,7 +92,7 @@ export async function PATCH(
             if (moduleData.lessons && moduleData.lessons.length > 0) {
                 for (let j = 0; j < moduleData.lessons.length; j++) {
                     const lessonData = moduleData.lessons[j]
-                    await prisma.lesson.create({
+                    const createdLesson = await prisma.lesson.create({
                         data: {
                             title: lessonData.title,
                             description: lessonData.description || null,
@@ -80,6 +110,17 @@ export async function PATCH(
                             moduleId: createdModule.id
                         }
                     })
+
+                    // Restore quiz if it existed for this lesson title
+                    const savedQuiz = quizByLessonTitle.get(lessonData.title)
+                    if (savedQuiz) {
+                        await prisma.lessonQuiz.create({
+                            data: {
+                                lessonId: createdLesson.id,
+                                questions: savedQuiz.questions
+                            }
+                        })
+                    }
                 }
             }
         }
