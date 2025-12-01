@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react"
 import { es, en } from "@/lib/translations"
 
 type Language = "es" | "en"
@@ -12,28 +12,42 @@ interface LanguageContextType {
     t: Translations
 }
 
+const TRANSLATIONS_MAP = { es, en } as const
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    const [language, setLanguage] = useState<Language>("es")
-    const [t, setTranslations] = useState<Translations>(es)
+    const [language, setLanguageState] = useState<Language>("es")
 
+    // Load saved language on mount and set document lang
     useEffect(() => {
-        // Check local storage or browser preference
-        const savedLang = localStorage.getItem("language") as Language
-        if (savedLang && (savedLang === "es" || savedLang === "en")) {
-            setLanguage(savedLang)
+        const savedLang = localStorage.getItem("language")
+        if (savedLang === "es" || savedLang === "en") {
+            setLanguageState(savedLang)
+            document.documentElement.lang = savedLang
+        } else {
+            document.documentElement.lang = "es"
         }
     }, [])
 
-    useEffect(() => {
-        setTranslations(language === "es" ? es : en)
-        localStorage.setItem("language", language)
-        document.documentElement.lang = language
-    }, [language])
+    // Memoized setLanguage to prevent unnecessary re-renders
+    const setLanguage = useCallback((lang: Language) => {
+        setLanguageState(lang)
+        localStorage.setItem("language", lang)
+        document.documentElement.lang = lang
+    }, [])
+
+    // Memoize translations based on language
+    const t = useMemo(() => TRANSLATIONS_MAP[language], [language])
+
+    // Memoize the context value to prevent unnecessary re-renders
+    const value = useMemo(() => ({
+        language,
+        setLanguage,
+        t
+    }), [language, setLanguage, t])
 
     return (
-        <LanguageContext.Provider value={{ language, setLanguage, t }}>
+        <LanguageContext.Provider value={value}>
             {children}
         </LanguageContext.Provider>
     )

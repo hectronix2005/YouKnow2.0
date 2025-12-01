@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -29,7 +30,7 @@ interface CourseCardProps {
     showProgress?: boolean
 }
 
-export function CourseCard({ course, enrollment, showProgress = false }: CourseCardProps) {
+export const CourseCard = memo(function CourseCard({ course, enrollment, showProgress = false }: CourseCardProps) {
     const { t } = useLanguage()
 
     return (
@@ -114,4 +115,4 @@ export function CourseCard({ course, enrollment, showProgress = false }: CourseC
             </CardFooter>
         </Card>
     )
-}
+})

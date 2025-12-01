@@ -42,41 +42,41 @@ async function main() {
     await prisma.user.deleteMany({
         where: {
             email: {
-                in: ['instructor@learnflow.ai', 'student@learnflow.ai']
+                in: ['lider@learnflow.ai', 'employee@learnflow.ai']
             }
         }
     })
     console.log('✅ Database cleaned')
 
-    // Create demo instructor user
-    const instructor = await prisma.user.create({
+    // Create demo lider user
+    const lider = await prisma.user.create({
         data: {
-            email: 'instructor@learnflow.ai',
-            password: '$2b$10$LiLPE8JgvN./9SerqXv1nuSmLJ4gzqz71r2k4LFC1u12A5M.AZMuC', // password: instructor123
+            email: 'lider@learnflow.ai',
+            password: '$2b$10$LiLPE8JgvN./9SerqXv1nuSmLJ4gzqz71r2k4LFC1u12A5M.AZMuC', // password: lider123
             name: 'Dr. Sarah Johnson',
-            role: 'instructor',
+            role: 'lider',
             xp: 5000,
             level: 10,
             streak: 30
         }
     })
 
-    console.log('👨‍🏫 Instructor:', instructor.name)
+    console.log('👨‍🏫 Líder:', lider.name)
 
-    // Create demo student user for testing
-    const student = await prisma.user.create({
+    // Create demo employee user for testing
+    const employee = await prisma.user.create({
         data: {
-            email: 'student@learnflow.ai',
-            password: '$2b$10$SefAlmsfttPpV23O73tGeuifB/xa1Q5nAsFfRFB/cnyhBJF32EQje', // password: student123
+            email: 'employee@learnflow.ai',
+            password: '$2b$10$SefAlmsfttPpV23O73tGeuifB/xa1Q5nAsFfRFB/cnyhBJF32EQje', // password: employee123
             name: 'Carlos Méndez',
-            role: 'student',
+            role: 'employee',
             xp: 150,
             level: 2,
             streak: 5
         }
     })
 
-    console.log('👨‍🎓 Student:', student.name)
+    console.log('👨‍💼 Employee:', employee.name)
 
     // Course 1: Full Stack Web Development Bootcamp
     const course1 = await prisma.course.create({
@@ -92,7 +92,7 @@ async function main() {
             isFree: false,
             status: 'published',
             publishedAt: new Date(),
-            instructorId: instructor.id,
+            instructorId: lider.id,
             modules: {
                 create: [
                     {
@@ -262,7 +262,7 @@ async function main() {
             isFree: false,
             status: 'published',
             publishedAt: new Date(),
-            instructorId: instructor.id,
+            instructorId: lider.id,
             modules: {
                 create: [
                     {
@@ -432,7 +432,7 @@ async function main() {
             isFree: false,
             status: 'published',
             publishedAt: new Date(),
-            instructorId: instructor.id,
+            instructorId: lider.id,
             modules: {
                 create: [
                     {
@@ -602,7 +602,7 @@ async function main() {
             isFree: false,
             status: 'published',
             publishedAt: new Date(),
-            instructorId: instructor.id,
+            instructorId: lider.id,
             modules: {
                 create: [
                     {
@@ -772,7 +772,7 @@ async function main() {
             isFree: false,
             status: 'published',
             publishedAt: new Date(),
-            instructorId: instructor.id,
+            instructorId: lider.id,
             modules: {
                 create: [
                     {

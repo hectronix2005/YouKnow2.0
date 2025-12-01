@@ -10,6 +10,7 @@ import Link from "next/link"
 interface CourseDetailClientProps {
     user: any
     course: any
+    enrollment: any | null
     isEnrolled: boolean
     totalLessons: number
     onSignOut: () => void
@@ -19,6 +20,7 @@ interface CourseDetailClientProps {
 export function CourseDetailClient({
     user,
     course,
+    enrollment,
     isEnrolled,
     totalLessons,
     onSignOut,
@@ -157,12 +159,33 @@ export function CourseDetailClient({
                                         </p>
                                     </div>
 
-                                    {isEnrolled ? (
-                                        <Link href={`/learn/${course.slug}`}>
-                                            <Button className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/20">
-                                                {t.courses.continue}
-                                            </Button>
-                                        </Link>
+                                    {isEnrolled && enrollment ? (
+                                        <>
+                                            {/* Progress indicator */}
+                                            {enrollment.progressPercent > 0 && (
+                                                <div className="mb-4">
+                                                    <div className="flex justify-between text-sm mb-2">
+                                                        <span className="text-gray-600 dark:text-gray-400">
+                                                            {t.dashboard.progress.replace("{percent}", Math.round(enrollment.progressPercent).toString())}
+                                                        </span>
+                                                        <span className="text-gray-600 dark:text-gray-400">
+                                                            {enrollment.completedLessons}/{totalLessons}
+                                                        </span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                                        <div
+                                                            className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-300"
+                                                            style={{ width: `${enrollment.progressPercent}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <Link href={`/learn/${course.slug}`}>
+                                                <Button className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/20">
+                                                    {t.courses.continue}
+                                                </Button>
+                                            </Link>
+                                        </>
                                     ) : (
                                         <form action={onEnroll}>
                                             <Button

@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth"
-import { isTeacher, isAdmin } from "@/lib/teacher"
+import { isAdmin } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
 
@@ -10,22 +10,24 @@ export async function PATCH(
     try {
         const session = await auth()
         const { courseId } = await params
-        const { title, description, price, category, modules } = await req.json()
 
         if (!session?.user) {
-            return new NextResponse("Unauthorized", { status: 401 })
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
+        const { title, description, price, category, modules } = await req.json()
+
         const course = await prisma.course.findUnique({
-            where: { id: courseId }
+            where: { id: courseId },
+            select: { id: true, instructorId: true }
         })
 
         if (!course) {
-            return new NextResponse("Not Found", { status: 404 })
+            return NextResponse.json({ error: "Course not found" }, { status: 404 })
         }
 
         if (course.instructorId !== session.user.id && !isAdmin(session.user.role)) {
-            return new NextResponse("Unauthorized", { status: 401 })
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
         // Update course details
@@ -128,6 +130,9 @@ export async function PATCH(
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error("[COURSE_PATCH]", error)
-        return new NextResponse("Internal Error", { status: 500 })
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        )
     }
 }

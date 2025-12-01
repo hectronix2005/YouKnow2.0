@@ -65,11 +65,21 @@ export async function POST(req: NextRequest) {
         })
 
         if (existingQuiz) {
+            let questions
+            try {
+                questions = JSON.parse(existingQuiz.questions)
+            } catch {
+                return NextResponse.json(
+                    { error: 'Invalid quiz data format' },
+                    { status: 500 }
+                )
+            }
+
             return NextResponse.json({
                 success: true,
                 quiz: {
                     id: existingQuiz.id,
-                    questions: JSON.parse(existingQuiz.questions),
+                    questions,
                     generatedAt: existingQuiz.generatedAt
                 }
             })

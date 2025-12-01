@@ -1,26 +1,31 @@
 import { auth } from "@/lib/auth"
-import { isTeacher } from "@/lib/teacher"
+import { isLeader } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
+import { generateUniqueSlug } from "@/lib/utils"
 
 export async function POST(req: Request) {
     try {
         const session = await auth()
-        const { title } = await req.json()
 
-        if (!session?.user || !isTeacher(session.user.role)) {
-            return new NextResponse("Unauthorized", { status: 401 })
+        if (!session?.user || !isLeader(session.user.role)) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        // Generate a slug from title
-        const slug = title
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/(^-|-$)+/g, "") + "-" + Date.now().toString().slice(-4)
+        const { title } = await req.json()
+
+        if (!title || typeof title !== "string" || title.trim().length < 3) {
+            return NextResponse.json(
+                { error: "Title must be at least 3 characters" },
+                { status: 400 }
+            )
+        }
+
+        const slug = generateUniqueSlug(title)
 
         const course = await prisma.course.create({
             data: {
-                title,
+                title: title.trim(),
                 slug,
                 description: "No description yet",
                 category: "Uncategorized",
@@ -34,6 +39,9 @@ export async function POST(req: Request) {
         return NextResponse.json(course)
     } catch (error) {
         console.error("[COURSES_POST]", error)
-        return new NextResponse("Internal Error", { status: 500 })
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        )
     }
 }

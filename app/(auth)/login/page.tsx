@@ -120,8 +120,8 @@ export default function LoginPage() {
                             <div className="rounded-lg bg-indigo-50 p-4 text-xs dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50">
                                 <p className="font-semibold text-indigo-900 dark:text-indigo-300 mb-2">{t.auth.demoCredentials}</p>
                                 <div className="space-y-1 text-indigo-700 dark:text-indigo-400 font-mono">
-                                    <p>Student: student@learnflow.ai / student123</p>
-                                    <p>Instructor: instructor@learnflow.ai / instructor123</p>
+                                    <p>Employee: empleado@learnflow.com / Empleado123!</p>
+                                    <p>Líder: lider@learnflow.ai / lider123</p>
                                 </div>
                             </div>
                         </CardContent>

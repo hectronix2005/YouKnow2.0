@@ -16,7 +16,7 @@ export default function RegisterPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
-    const [role, setRole] = useState("student")
+    const [role, setRole] = useState("employee")
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
 
@@ -160,31 +160,31 @@ export default function RegisterPage() {
                                 </label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div
-                                        className={`cursor-pointer rounded-lg border p-4 transition-all ${role === "student"
+                                        className={`cursor-pointer rounded-lg border p-4 transition-all ${role === "employee"
                                                 ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500 ring-1 ring-indigo-600 dark:ring-indigo-500"
                                                 : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
                                             }`}
-                                        onClick={() => setRole("student")}
+                                        onClick={() => setRole("employee")}
                                     >
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="font-medium text-sm">{t.auth.studentRole.split(" ")[0]}</span>
-                                            {role === "student" && <Check className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />}
+                                            <span className="font-medium text-sm">{t.auth.employeeRole.split(" ")[0]}</span>
+                                            {role === "employee" && <Check className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />}
                                         </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Student</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Employee</p>
                                     </div>
 
                                     <div
-                                        className={`cursor-pointer rounded-lg border p-4 transition-all ${role === "instructor"
+                                        className={`cursor-pointer rounded-lg border p-4 transition-all ${role === "lider"
                                                 ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500 ring-1 ring-indigo-600 dark:ring-indigo-500"
                                                 : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
                                             }`}
-                                        onClick={() => setRole("instructor")}
+                                        onClick={() => setRole("lider")}
                                     >
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="font-medium text-sm">{t.auth.instructorRole.split(" ")[0]}</span>
-                                            {role === "instructor" && <Check className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />}
+                                            <span className="font-medium text-sm">{t.auth.liderRole.split(" ")[0]}</span>
+                                            {role === "lider" && <Check className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />}
                                         </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Instructor</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Líder</p>
                                     </div>
                                 </div>
                             </div>

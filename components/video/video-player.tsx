@@ -1,39 +1,37 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, AlertCircle, Loader2, RefreshCw, Youtube } from "lucide-react"
+import { useState, useRef, useEffect, useCallback, memo } from "react"
+import { Play, Pause, Volume2, VolumeX, Maximize, AlertCircle, Loader2, RefreshCw, Youtube } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn, formatTime } from "@/lib/utils"
 
-// Videos de fallback confiables (videos de dominio público)
+// Constants moved outside component to prevent recreation
 const FALLBACK_VIDEOS = [
     "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4",
-]
+] as const
+
+const YOUTUBE_PATTERNS = [
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+] as const
+
+const MAX_RETRIES = 3
+const RETRY_DELAY = 2000
 
 // Helper para detectar y extraer ID de YouTube
 function getYouTubeId(url: string): string | null {
     if (!url) return null
-    // Soporta múltiples formatos de URL de YouTube
-    const patterns = [
-        /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
-        /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-        /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-        /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
-        /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
-    ]
 
-    for (const pattern of patterns) {
+    for (const pattern of YOUTUBE_PATTERNS) {
         const match = url.match(pattern)
         if (match) return match[1]
     }
     return null
-}
-
-function isYouTubeUrl(url: string): boolean {
-    if (!url) return false
-    return url.includes('youtube.com') || url.includes('youtu.be')
 }
 
 // Componente para reproductor de YouTube
@@ -128,9 +126,6 @@ export function VideoPlayer({
     const [retryCount, setRetryCount] = useState(0)
     const [currentSrcIndex, setCurrentSrcIndex] = useState(0)
     const controlsTimeoutRef = useRef<NodeJS.Timeout>(null)
-
-    const MAX_RETRIES = 3
-    const RETRY_DELAY = 2000 // 2 segundos entre reintentos
 
     // Lista de fuentes a intentar
     const videoSources = src ? [src, ...FALLBACK_VIDEOS] : FALLBACK_VIDEOS
@@ -297,14 +292,6 @@ export function VideoPlayer({
             videoRef.current.load()
         }
     }, [])
-
-    // Formatear tiempo
-    const formatTime = (seconds: number): string => {
-        if (isNaN(seconds)) return "0:00"
-        const mins = Math.floor(seconds / 60)
-        const secs = Math.floor(seconds % 60)
-        return `${mins}:${secs.toString().padStart(2, '0')}`
-    }
 
     // Auto-ocultar controles
     useEffect(() => {

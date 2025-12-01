@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { isTeacher, isAdmin } from "@/lib/teacher"
+import { isLeader, isAdmin } from "@/lib/teacher"
 
 interface NavbarProps {
     user?: {
@@ -68,15 +68,15 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Button>
                             </Link>
 
-                            {isTeacher(user.role) && (
-                                <Link href="/instructor">
+                            {isLeader(user.role) && (
+                                <Link href="/lider">
                                     <Button
-                                        variant={isActive("/instructor") ? "secondary" : "ghost"}
+                                        variant={isActive("/lider") ? "secondary" : "ghost"}
                                         size="sm"
-                                        className={isActive("/instructor") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                        className={isActive("/lider") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
                                     >
                                         <User className="mr-2 h-4 w-4" />
-                                        {t.nav.instructor}
+                                        {t.nav.lider}
                                     </Button>
                                 </Link>
                             )}

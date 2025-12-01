@@ -13,7 +13,7 @@ model User {
   email         String    @unique
   password      String
   name          String
-  role          String    @default("student") // student, instructor, admin, super_admin
+  role          String    @default("employee") // employee, lider, admin, super_admin
   avatar        String?
   xp            Int       @default(0)
   level         Int       @default(1)
@@ -27,6 +27,7 @@ model User {
   enrollments    Enrollment[]
   progress       LessonProgress[]
   achievements   Achievement[]
+  taskAssignments TaskAssignment[] @relation("EmployeeTasks")
 }
 
 model Course {
@@ -157,4 +158,60 @@ model QuizAttempt {
   answers         String    // JSON of user answers
   completedAt     DateTime  @default(now())
   timeSpent       Int       // seconds
+}
+
+// ==================== CHECKLIST MODULE ====================
+
+// Template de tareas que se asignan a empleados
+model TaskTemplate {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  description     String?
+  frequency       String    // daily, weekly, monthly
+  scheduledTime   String?   // HH:MM format for daily tasks with specific time
+  scheduledDay    Int?      // 0-6 for weekly (0=Sunday), 1-31 for monthly
+  requiresPhoto   Boolean   @default(false)
+  category        String?   // cleaning, maintenance, security, etc.
+  priority        String    @default("medium") // low, medium, high
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdById     String    @db.ObjectId
+
+  // Relations
+  assignments     TaskAssignment[]
+}
+
+// Asignación de tareas a empleados específicos
+model TaskAssignment {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  taskTemplateId  String    @db.ObjectId
+  taskTemplate    TaskTemplate @relation(fields: [taskTemplateId], references: [id], onDelete: Cascade)
+  employeeId      String    @db.ObjectId
+  employee        User      @relation("EmployeeTasks", fields: [employeeId], references: [id])
+  assignedAt      DateTime  @default(now())
+  isActive        Boolean   @default(true)
+
+  // Relations
+  completions     TaskCompletion[]
+
+  @@unique([taskTemplateId, employeeId])
+}
+
+// Registro de cumplimiento de tareas
+model TaskCompletion {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId    String    @db.ObjectId
+  assignment      TaskAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  completedAt     DateTime  @default(now())
+  scheduledDate   DateTime  // Fecha para la que estaba programada
+  status          String    @default("completed") // completed, pending, missed
+  photoUrl        String?   // URL de la foto de evidencia
+  photoPublicId   String?   // ID público para eliminar de Cloudinary
+  notes           String?   // Notas adicionales del empleado
+  completedOnTime Boolean   @default(true)
+  verifiedAt      DateTime? // Cuando un admin verificó la tarea
+  verifiedById    String?   @db.ObjectId
+
+  @@index([assignmentId, scheduledDate])
 }

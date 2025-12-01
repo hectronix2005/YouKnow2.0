@@ -66,7 +66,7 @@ export function UsersTable({ initialUsers, currentUserRole }: UsersTableProps) {
         switch (role) {
             case "super_admin": return <ShieldAlert className="h-4 w-4 text-red-500" />
             case "admin": return <ShieldCheck className="h-4 w-4 text-indigo-500" />
-            case "instructor": return <Shield className="h-4 w-4 text-green-500" />
+            case "lider": return <Shield className="h-4 w-4 text-green-500" />
             default: return <User className="h-4 w-4 text-gray-500" />
         }
     }
@@ -116,11 +116,11 @@ export function UsersTable({ initialUsers, currentUserRole }: UsersTableProps) {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="start">
-                                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, "student")}>
-                                                    <User className="mr-2 h-4 w-4" /> Student
+                                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, "employee")}>
+                                                    <User className="mr-2 h-4 w-4" /> Employee
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, "instructor")}>
-                                                    <Shield className="mr-2 h-4 w-4" /> Instructor
+                                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, "lider")}>
+                                                    <Shield className="mr-2 h-4 w-4" /> Líder
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin")}>
                                                     <ShieldCheck className="mr-2 h-4 w-4" /> Admin

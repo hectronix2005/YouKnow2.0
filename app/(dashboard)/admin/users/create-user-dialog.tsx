@@ -18,7 +18,7 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
         name: "",
         email: "",
         password: "",
-        role: "student"
+        role: "employee"
     })
 
     const isSuperAdmin = currentUserRole === "super_admin"
@@ -41,7 +41,7 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
 
             alert("User created successfully")
             setOpen(false)
-            setFormData({ name: "", email: "", password: "", role: "student" })
+            setFormData({ name: "", email: "", password: "", role: "employee" })
             router.refresh()
         } catch (error) {
             alert(error instanceof Error ? error.message : "Failed to create user")
@@ -112,8 +112,8 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <option value="student">Student</option>
-                            <option value="instructor">Instructor</option>
+                            <option value="employee">Employee</option>
+                            <option value="lider">Líder</option>
                             <option value="admin">Admin</option>
                             {isSuperAdmin && (
                                 <option value="super_admin">Super Admin</option>

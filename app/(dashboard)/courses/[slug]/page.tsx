@@ -38,7 +38,8 @@ export default async function CourseDetailPage({
         notFound()
     }
 
-    const isEnrolled = course.enrollments.length > 0
+    const enrollment = course.enrollments.length > 0 ? course.enrollments[0] : null
+    const isEnrolled = enrollment !== null
     const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
 
     const handleSignOut = async () => {
@@ -63,6 +64,7 @@ export default async function CourseDetailPage({
         <CourseDetailClient
             user={session.user}
             course={course}
+            enrollment={enrollment}
             isEnrolled={isEnrolled}
             totalLessons={totalLessons}
             onSignOut={handleSignOut}

@@ -33,8 +33,23 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        // Parsear las preguntas
-        const questions = JSON.parse(quiz.questions)
+        // Parsear las preguntas con manejo de errores
+        let questions
+        try {
+            questions = JSON.parse(quiz.questions)
+        } catch {
+            return NextResponse.json(
+                { error: 'Invalid quiz data format' },
+                { status: 500 }
+            )
+        }
+
+        if (!Array.isArray(questions) || questions.length === 0) {
+            return NextResponse.json(
+                { error: 'Quiz has no valid questions' },
+                { status: 400 }
+            )
+        }
 
         // Calcular puntuación
         let correctAnswers = 0

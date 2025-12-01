@@ -34,7 +34,7 @@ export async function POST(req: Request) {
                 name,
                 email,
                 password: hashedPassword,
-                role: role || "student"
+                role: role || "employee"
             }
         })
 
