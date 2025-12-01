@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LearnFlow AI - Learn Anything, Anytime",
+  title: "YouKnow - Learn Anything, Anytime",
   description: "Modern e-learning platform powered by AI. Master new skills with personalized learning paths.",
 };
 

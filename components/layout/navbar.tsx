@@ -39,7 +39,7 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                             <GraduationCap className="relative h-8 w-8 text-white" />
                         </div>
                         <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-                            LearnFlow AI
+                            YouKnow
                         </span>
                     </Link>
 

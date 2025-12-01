@@ -152,7 +152,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center space-x-2">
             <GraduationCap className="h-6 w-6 text-indigo-600" />
-            <span className="text-lg font-bold text-gray-900 dark:text-white">LearnFlow AI</span>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">YouKnow</span>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {t.home.footer}
