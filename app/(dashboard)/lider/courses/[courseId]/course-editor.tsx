@@ -346,12 +346,8 @@ export function CourseEditor({ course }: CourseEditorProps) {
                                                             />
                                                         </div>
                                                         <div className="flex items-center gap-1">
-                                                            {lesson.lessonType === 'quiz' ? (
-                                                                <span className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded">
-                                                                    <Target className="h-3 w-3" />
-                                                                    Quiz
-                                                                </span>
-                                                            ) : videoType === 'youtube' ? (
+                                                            {/* Video indicator */}
+                                                            {videoType === 'youtube' ? (
                                                                 <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded">
                                                                     <Youtube className="h-3 w-3" />
                                                                     YouTube
@@ -367,6 +363,13 @@ export function CourseEditor({ course }: CourseEditorProps) {
                                                                     Sin video
                                                                 </span>
                                                             )}
+                                                            {/* Quiz indicator */}
+                                                            {lesson.hasQuiz && (
+                                                                <span className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded">
+                                                                    <Target className="h-3 w-3" />
+                                                                    Quiz
+                                                                </span>
+                                                            )}
                                                             <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500 hover:text-red-700" onClick={() => handleDeleteLesson(moduleIndex, lessonIndex)}>
                                                                 <Trash className="h-3 w-3" />
                                                             </Button>
@@ -375,169 +378,152 @@ export function CourseEditor({ course }: CourseEditorProps) {
 
                                                     {/* Expanded Content */}
                                                     {isExpanded && (
-                                                        <div className="px-4 pb-4 pt-2 bg-gray-50 dark:bg-gray-800/30 border-t dark:border-gray-700 space-y-3">
-                                                            {/* Lesson Type Selector */}
-                                                            <div className="space-y-2">
-                                                                <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                                    Tipo de Lección
-                                                                </Label>
-                                                                <div className="flex gap-2">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleUpdateLesson(moduleIndex, lessonIndex, 'lessonType', 'video')}
-                                                                        className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                                                                            lesson.lessonType !== 'quiz'
-                                                                                ? 'bg-indigo-600 text-white'
-                                                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
-                                                                        }`}
-                                                                    >
-                                                                        <Video className="h-4 w-4 inline mr-2" />
-                                                                        Video
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleUpdateLesson(moduleIndex, lessonIndex, 'lessonType', 'quiz')}
-                                                                        className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                                                                            lesson.lessonType === 'quiz'
-                                                                                ? 'bg-purple-600 text-white'
-                                                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
-                                                                        }`}
-                                                                    >
-                                                                        <Target className="h-4 w-4 inline mr-2" />
-                                                                        Quiz
-                                                                    </button>
+                                                        <div className="px-4 pb-4 pt-2 bg-gray-50 dark:bg-gray-800/30 border-t dark:border-gray-700 space-y-4">
+                                                            {/* Video Section - Always visible */}
+                                                            <div className="space-y-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Video className="h-4 w-4 text-indigo-600" />
+                                                                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                                        Video de la Lección
+                                                                    </Label>
                                                                 </div>
-                                                            </div>
 
-                                                            {/* Video Content - Only show if type is video */}
-                                                            {lesson.lessonType !== 'quiz' && (
-                                                                <>
-                                                                    {/* Video URL Editor */}
+                                                                {/* Video URL Editor */}
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                                                                        <LinkIcon className="h-3 w-3" />
+                                                                        URL del Video (YouTube o enlace directo MP4)
+                                                                    </Label>
+                                                                    <Input
+                                                                        value={lesson.videoUrl || ''}
+                                                                        onChange={(e) => handleUpdateLesson(moduleIndex, lessonIndex, 'videoUrl', e.target.value)}
+                                                                        placeholder="https://youtube.com/watch?v=... o https://example.com/video.mp4"
+                                                                        className="text-sm"
+                                                                        suppressHydrationWarning
+                                                                    />
+                                                                </div>
+
+                                                                {/* Video Preview */}
+                                                                {lesson.videoUrl && (
                                                                     <div className="space-y-2">
-                                                                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                                                                            <LinkIcon className="h-3 w-3" />
-                                                                            URL del Video (YouTube o enlace directo MP4)
+                                                                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                                                                            Vista previa
+                                                                        </Label>
+                                                                        {videoType === 'youtube' && youtubeId ? (
+                                                                            <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                                                                                <iframe
+                                                                                    src={`https://www.youtube.com/embed/${youtubeId}`}
+                                                                                    className="w-full h-full"
+                                                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                                                    allowFullScreen
+                                                                                />
+                                                                            </div>
+                                                                        ) : videoType === 'direct' ? (
+                                                                            <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                                                                                <video
+                                                                                    src={lesson.videoUrl}
+                                                                                    controls
+                                                                                    className="w-full h-full"
+                                                                                />
+                                                                            </div>
+                                                                        ) : null}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Duration and Description */}
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="space-y-2">
+                                                                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                                                                            Duración (minutos)
                                                                         </Label>
                                                                         <Input
-                                                                            value={lesson.videoUrl || ''}
-                                                                            onChange={(e) => handleUpdateLesson(moduleIndex, lessonIndex, 'videoUrl', e.target.value)}
-                                                                            placeholder="https://youtube.com/watch?v=... o https://example.com/video.mp4"
+                                                                            type="number"
+                                                                            value={lesson.videoDuration ? Math.round(lesson.videoDuration / 60) : ''}
+                                                                            onChange={(e) => handleUpdateLesson(moduleIndex, lessonIndex, 'videoDuration', String(parseInt(e.target.value || '0') * 60))}
+                                                                            placeholder="15"
                                                                             className="text-sm"
                                                                             suppressHydrationWarning
                                                                         />
                                                                     </div>
-
-                                                                    {/* Video Preview */}
-                                                                    {lesson.videoUrl && (
-                                                                        <div className="space-y-2">
-                                                                            <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                                                Vista previa
-                                                                            </Label>
-                                                                            {videoType === 'youtube' && youtubeId ? (
-                                                                                <div className="aspect-video rounded-lg overflow-hidden bg-black">
-                                                                                    <iframe
-                                                                                        src={`https://www.youtube.com/embed/${youtubeId}`}
-                                                                                        className="w-full h-full"
-                                                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                                                        allowFullScreen
-                                                                                    />
-                                                                                </div>
-                                                                            ) : videoType === 'direct' ? (
-                                                                                <div className="aspect-video rounded-lg overflow-hidden bg-black">
-                                                                                    <video
-                                                                                        src={lesson.videoUrl}
-                                                                                        controls
-                                                                                        className="w-full h-full"
-                                                                                    />
-                                                                                </div>
-                                                                            ) : null}
-                                                                        </div>
-                                                                    )}
-
-                                                                    {/* Duration and Description */}
-                                                                    <div className="grid grid-cols-2 gap-4">
-                                                                        <div className="space-y-2">
-                                                                            <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                                                Duración (minutos)
-                                                                            </Label>
-                                                                            <Input
-                                                                                type="number"
-                                                                                value={lesson.videoDuration ? Math.round(lesson.videoDuration / 60) : ''}
-                                                                                onChange={(e) => handleUpdateLesson(moduleIndex, lessonIndex, 'videoDuration', String(parseInt(e.target.value || '0') * 60))}
-                                                                                placeholder="15"
-                                                                                className="text-sm"
-                                                                                suppressHydrationWarning
-                                                                            />
-                                                                        </div>
-                                                                        <div className="space-y-2">
-                                                                            <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                                                Descripción
-                                                                            </Label>
-                                                                            <Input
-                                                                                value={lesson.description || ''}
-                                                                                onChange={(e) => handleUpdateLesson(moduleIndex, lessonIndex, 'description', e.target.value)}
-                                                                                placeholder="Breve descripción..."
-                                                                                className="text-sm"
-                                                                                suppressHydrationWarning
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                </>
-                                                            )}
-
-                                                            {/* Quiz Content - Only show if type is quiz */}
-                                                            {lesson.lessonType === 'quiz' && (
-                                                                <div className="space-y-3">
-                                                                    {/* Quiz Info Box */}
-                                                                    <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-                                                                        <h4 className="font-semibold text-purple-800 dark:text-purple-300 mb-2 flex items-center gap-2">
-                                                                            <Target className="h-4 w-4" />
-                                                                            Requisitos del Quiz
-                                                                        </h4>
-                                                                        <ul className="text-sm text-purple-700 dark:text-purple-400 space-y-1">
-                                                                            <li>• Mínimo <strong>10 preguntas</strong> requeridas</li>
-                                                                            <li>• Cada pregunta debe tener 4 opciones</li>
-                                                                            <li>• 1 respuesta correcta + 3 incorrectas</li>
-                                                                            <li>• Los estudiantes recibirán 5 preguntas aleatorias</li>
-                                                                        </ul>
-                                                                    </div>
-
-                                                                    {/* Description for quiz */}
                                                                     <div className="space-y-2">
                                                                         <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                                            Descripción del Quiz
+                                                                            Descripción
                                                                         </Label>
                                                                         <Input
                                                                             value={lesson.description || ''}
                                                                             onChange={(e) => handleUpdateLesson(moduleIndex, lessonIndex, 'description', e.target.value)}
-                                                                            placeholder="Ej: Quiz de evaluación del módulo..."
+                                                                            placeholder="Breve descripción..."
                                                                             className="text-sm"
                                                                             suppressHydrationWarning
                                                                         />
                                                                     </div>
-
-                                                                    {/* Quiz Editor Button */}
-                                                                    {lesson.id && !lesson.id.startsWith('temp-') ? (
-                                                                        <Button
-                                                                            size="sm"
-                                                                            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                                                                            onClick={() => setQuizEditorLesson({
-                                                                                id: lesson.id,
-                                                                                title: lesson.title
-                                                                            })}
-                                                                        >
-                                                                            <Target className="h-4 w-4 mr-2" />
-                                                                            Crear/Editar Preguntas del Quiz
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                                                                            <p className="text-sm text-amber-700 dark:text-amber-400">
-                                                                                <strong>Primero guarda la lección</strong> para poder agregar las preguntas del quiz.
-                                                                            </p>
-                                                                        </div>
-                                                                    )}
                                                                 </div>
-                                                            )}
+                                                            </div>
+
+                                                            {/* Divider */}
+                                                            <div className="border-t dark:border-gray-700 pt-4">
+                                                                {/* Quiz Toggle */}
+                                                                <div className="flex items-center justify-between mb-3">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Target className="h-4 w-4 text-purple-600" />
+                                                                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                                            Quiz de Evaluación
+                                                                        </Label>
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleUpdateLesson(moduleIndex, lessonIndex, 'hasQuiz', lesson.hasQuiz ? '' : 'true')}
+                                                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                                                            lesson.hasQuiz ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                                                                        }`}
+                                                                    >
+                                                                        <span
+                                                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                                                lesson.hasQuiz ? 'translate-x-6' : 'translate-x-1'
+                                                                            }`}
+                                                                        />
+                                                                    </button>
+                                                                </div>
+
+                                                                {/* Quiz Content - Only show if hasQuiz is true */}
+                                                                {lesson.hasQuiz && (
+                                                                    <div className="space-y-3 pl-6 border-l-2 border-purple-200 dark:border-purple-800">
+                                                                        {/* Quiz Info Box */}
+                                                                        <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                                                                            <h4 className="font-semibold text-purple-800 dark:text-purple-300 mb-2 flex items-center gap-2 text-sm">
+                                                                                <Target className="h-3 w-3" />
+                                                                                Requisitos del Quiz
+                                                                            </h4>
+                                                                            <ul className="text-xs text-purple-700 dark:text-purple-400 space-y-1">
+                                                                                <li>• Mínimo <strong>10 preguntas</strong> requeridas</li>
+                                                                                <li>• Cada pregunta: 4 opciones (1 correcta + 3 incorrectas)</li>
+                                                                                <li>• Los estudiantes recibirán 5 preguntas aleatorias</li>
+                                                                            </ul>
+                                                                        </div>
+
+                                                                        {/* Quiz Editor Button */}
+                                                                        {lesson.id && !lesson.id.startsWith('temp-') ? (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                                                                                onClick={() => setQuizEditorLesson({
+                                                                                    id: lesson.id,
+                                                                                    title: lesson.title
+                                                                                })}
+                                                                            >
+                                                                                <Target className="h-4 w-4 mr-2" />
+                                                                                Crear/Editar Preguntas del Quiz
+                                                                            </Button>
+                                                                        ) : (
+                                                                            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                                                                                <p className="text-sm text-amber-700 dark:text-amber-400">
+                                                                                    <strong>Primero guarda la lección</strong> para agregar preguntas.
+                                                                                </p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
 
                                                             {/* Save Button */}
                                                             <div className="pt-2 border-t dark:border-gray-700">
@@ -560,14 +546,10 @@ export function CourseEditor({ course }: CourseEditorProps) {
                                                 </div>
                                             )
                                         })}
-                                        <div className="flex gap-2 mt-2">
-                                            <Button size="sm" variant="ghost" className="flex-1 justify-center text-indigo-600" onClick={() => handleAddLesson(moduleIndex, 'video')}>
-                                                <Video className="h-3 w-3 mr-2" />
-                                                + Video
-                                            </Button>
-                                            <Button size="sm" variant="ghost" className="flex-1 justify-center text-purple-600" onClick={() => handleAddLesson(moduleIndex, 'quiz')}>
-                                                <Target className="h-3 w-3 mr-2" />
-                                                + Quiz
+                                        <div className="mt-2">
+                                            <Button size="sm" variant="ghost" className="w-full justify-center text-indigo-600" onClick={() => handleAddLesson(moduleIndex, 'video')}>
+                                                <Plus className="h-3 w-3 mr-2" />
+                                                Agregar Lección
                                             </Button>
                                         </div>
                                     </div>

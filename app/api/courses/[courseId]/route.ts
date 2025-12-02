@@ -103,6 +103,7 @@ export async function PATCH(
                             videoUrl: lessonData.videoUrl || null,
                             videoDuration: lessonData.videoDuration ? parseInt(lessonData.videoDuration) : null,
                             isPreview: lessonData.isPreview || false,
+                            hasQuiz: lessonData.hasQuiz === true || lessonData.hasQuiz === 'true',
                             transcription: lessonData.transcription || null,
                             transcriptSegments: lessonData.transcriptSegments
                                 ? (typeof lessonData.transcriptSegments === 'string'

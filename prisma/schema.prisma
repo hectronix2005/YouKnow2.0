@@ -79,11 +79,12 @@ model Lesson {
   title               String
   description         String?
   orderIndex          Int
-  lessonType          String    // video, article, quiz
+  lessonType          String    @default("video") // video, article
   videoUrl            String?
   videoDuration       Int?      // seconds
   articleContent      String?
   isPreview           Boolean   @default(false)
+  hasQuiz             Boolean   @default(false) // Whether this lesson has an associated quiz
   transcription       String?   // Full transcription/subtitles text
   transcriptSegments  String?   // JSON string of segments with timestamps
   createdAt           DateTime  @default(now())
