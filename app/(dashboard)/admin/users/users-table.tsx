@@ -7,7 +7,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -131,10 +130,9 @@ export function UsersTable({ initialUsers, currentUserRole }: UsersTableProps) {
                                                 </DropdownMenuTrigger>
                                                 {canEdit && (
                                                     <DropdownMenuContent align="start" className="w-56">
-                                                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">
+                                                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 border-b mb-1">
                                                             Seleccionar nivel de permisos
                                                         </div>
-                                                        <DropdownMenuSeparator />
                                                         {roleOrder.map((role) => {
                                                             const info = RoleInfo[role]
                                                             const isAssignable = assignableRoles.includes(role)
