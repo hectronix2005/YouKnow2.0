@@ -9,14 +9,13 @@ function getTodayDate(): Date {
     return today
 }
 
-// Helper to check if a task should appear for today
-function shouldTaskAppearToday(task: {
+// Helper to check if a task should appear for a specific date
+function shouldTaskAppearOnDate(task: {
     frequency: string
     scheduledDay: number | null
-}): boolean {
-    const today = new Date()
-    const dayOfWeek = today.getDay() // 0-6, 0=Sunday
-    const dayOfMonth = today.getDate() // 1-31
+}, targetDate: Date): boolean {
+    const dayOfWeek = targetDate.getDay() // 0-6, 0=Sunday
+    const dayOfMonth = targetDate.getDate() // 1-31
 
     switch (task.frequency) {
         case "daily":
@@ -78,7 +77,7 @@ export async function GET(req: Request) {
 
         // Filter tasks that should appear for the target date
         const todaysTasks = assignments
-            .filter((assignment) => shouldTaskAppearToday(assignment.taskTemplate))
+            .filter((assignment) => shouldTaskAppearOnDate(assignment.taskTemplate, targetDate))
             .map((assignment) => {
                 const completion = assignment.completions[0] || null
                 return {
