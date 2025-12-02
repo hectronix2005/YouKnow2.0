@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import Link from "next/link"
 import { TaskForm } from "@/components/checklist/task-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,7 @@ import {
     Camera,
     ChevronDown,
     ChevronUp,
+    ArrowLeft,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -289,17 +291,25 @@ export function ChecklistAdmin() {
     return (
         <div className="container mx-auto px-4 py-8 max-w-6xl">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold mb-2">Administración de Tareas</h1>
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Gestiona las tareas del checklist de empleados
-                    </p>
+            <div className="mb-8">
+                <Link href="/checklist">
+                    <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Volver a Mis Tareas
+                    </Button>
+                </Link>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">Administración de Tareas</h1>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            Gestiona las tareas del checklist de empleados
+                        </p>
+                    </div>
+                    <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        Nueva Tarea
+                    </Button>
                 </div>
-                <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Nueva Tarea
-                </Button>
             </div>
 
             {error && (

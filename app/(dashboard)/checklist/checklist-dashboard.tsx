@@ -6,7 +6,7 @@ import { TaskCard } from "@/components/checklist/task-card"
 import { TaskStats } from "@/components/checklist/task-stats"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, Calendar, ChevronLeft, ChevronRight, Settings } from "lucide-react"
+import { RefreshCw, Calendar, ChevronLeft, ChevronRight, Settings, ArrowLeft } from "lucide-react"
 
 interface TaskTemplate {
     id: string
@@ -212,21 +212,29 @@ export function ChecklistDashboard({ userId, userName, userRole }: ChecklistDash
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             {/* Header */}
-            <div className="mb-8 flex items-start justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold mb-2">Mis Tareas</h1>
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Bienvenido, {userName}
-                    </p>
+            <div className="mb-8">
+                <Link href="/dashboard">
+                    <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Volver al Dashboard
+                    </Button>
+                </Link>
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">Mis Tareas</h1>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            Bienvenido, {userName}
+                        </p>
+                    </div>
+                    {isLeaderOrAdmin && (
+                        <Link href="/checklist/admin">
+                            <Button variant="outline" className="flex items-center gap-2">
+                                <Settings className="h-4 w-4" />
+                                Administrar Tareas
+                            </Button>
+                        </Link>
+                    )}
                 </div>
-                {isLeaderOrAdmin && (
-                    <Link href="/checklist/admin">
-                        <Button variant="outline" className="flex items-center gap-2">
-                            <Settings className="h-4 w-4" />
-                            Administrar Tareas
-                        </Button>
-                    </Link>
-                )}
             </div>
 
             {/* Date Navigation */}
