@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Home, User, LogOut, GraduationCap, Globe, ShieldCheck, CheckSquare } from "lucide-react"
+import { BookOpen, Home, LogOut, GraduationCap, Globe, ShieldCheck, CheckSquare, Palette, Users, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
 import {
@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { isLeader, isAdmin, isCreator, Role } from "@/lib/teacher"
+import { isCreator, isLeader, isAdmin, getRoleInfo, getRoleLevel } from "@/lib/teacher"
 
 interface NavbarProps {
     user?: {
@@ -26,7 +26,10 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
     const pathname = usePathname()
     const { t, language, setLanguage } = useLanguage()
 
-    const isActive = (path: string) => pathname === path
+    const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/")
+
+    const roleInfo = user ? getRoleInfo(user.role) : null
+    const userLevel = user ? getRoleLevel(user.role) : 0
 
     return (
         <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/80">
@@ -46,6 +49,7 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                     {/* Navigation */}
                     {user && (
                         <div className="hidden md:flex md:items-center md:space-x-1">
+                            {/* Level 1+: Dashboard */}
                             <Link href="/dashboard">
                                 <Button
                                     variant={isActive("/dashboard") ? "secondary" : "ghost"}
@@ -57,6 +61,7 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Button>
                             </Link>
 
+                            {/* Level 1+: Courses */}
                             <Link href="/courses">
                                 <Button
                                     variant={isActive("/courses") ? "secondary" : "ghost"}
@@ -68,6 +73,7 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Button>
                             </Link>
 
+                            {/* Level 1+: Checklist */}
                             <Link href="/checklist">
                                 <Button
                                     variant={isActive("/checklist") ? "secondary" : "ghost"}
@@ -79,34 +85,35 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Button>
                             </Link>
 
-                            {/* Creador link - for creador role */}
-                            {user.role === Role.CREADOR && (
+                            {/* Level 2+: Creador */}
+                            {isCreator(user.role) && (
                                 <Link href="/creador">
                                     <Button
                                         variant={isActive("/creador") ? "secondary" : "ghost"}
                                         size="sm"
-                                        className={isActive("/creador") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                        className={isActive("/creador") ? "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300" : ""}
                                     >
-                                        <User className="mr-2 h-4 w-4" />
+                                        <Palette className="mr-2 h-4 w-4" />
                                         Creador
                                     </Button>
                                 </Link>
                             )}
 
-                            {/* Lider link - for lider, admin, super_admin (but not creador) */}
-                            {isLeader(user.role) && user.role !== Role.CREADOR && (
+                            {/* Level 3+: Lider */}
+                            {isLeader(user.role) && (
                                 <Link href="/lider">
                                     <Button
                                         variant={isActive("/lider") ? "secondary" : "ghost"}
                                         size="sm"
-                                        className={isActive("/lider") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                        className={isActive("/lider") ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300" : ""}
                                     >
-                                        <User className="mr-2 h-4 w-4" />
+                                        <Users className="mr-2 h-4 w-4" />
                                         {t.nav.lider}
                                     </Button>
                                 </Link>
                             )}
 
+                            {/* Level 4+: Admin */}
                             {isAdmin(user.role) && (
                                 <Link href="/admin/users">
                                     <Button
@@ -134,19 +141,30 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setLanguage("es")} className={language === "es" ? "bg-accent" : ""}>
-                                    🇪🇸 {t.common.spanish}
+                                    {t.common.spanish}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent" : ""}>
-                                    🇺🇸 {t.common.english}
+                                    {t.common.english}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
                         {user ? (
                             <>
-                                <div className="hidden md:block text-right">
-                                    <p className="text-sm font-medium">{user.name}</p>
-                                    <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                                <div className="hidden md:flex md:items-center md:gap-2">
+                                    <div className="text-right">
+                                        <p className="text-sm font-medium">{user.name}</p>
+                                        <div className="flex items-center justify-end gap-1">
+                                            {roleInfo && (
+                                                <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${roleInfo.bgColor} ${roleInfo.color}`}>
+                                                    Nv.{roleInfo.level}
+                                                </span>
+                                            )}
+                                            <span className={`text-xs ${roleInfo?.color || 'text-gray-500'}`}>
+                                                {roleInfo?.label || user.role}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <Button
                                     variant="ghost"

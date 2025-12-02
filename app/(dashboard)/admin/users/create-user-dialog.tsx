@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, Plus, X } from "lucide-react"
+import { getAssignableRoles, RoleInfo, Role } from "@/lib/teacher"
 
 interface CreateUserDialogProps {
     currentUserRole: string
@@ -21,7 +22,8 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
         role: "employee"
     })
 
-    const isSuperAdmin = currentUserRole === "super_admin"
+    const assignableRoles = getAssignableRoles(currentUserRole)
+    const roleOrder = [Role.EMPLOYEE, Role.CREADOR, Role.LIDER, Role.ADMIN, Role.SUPER_ADMIN]
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -39,12 +41,12 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
                 throw new Error(data.error || "Failed to create user")
             }
 
-            alert("User created successfully")
+            alert("Usuario creado exitosamente")
             setOpen(false)
             setFormData({ name: "", email: "", password: "", role: "employee" })
             router.refresh()
         } catch (error) {
-            alert(error instanceof Error ? error.message : "Failed to create user")
+            alert(error instanceof Error ? error.message : "Error al crear usuario")
         } finally {
             setLoading(false)
         }
@@ -54,7 +56,7 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
         return (
             <Button onClick={() => setOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Create User
+                Crear Usuario
             </Button>
         )
     }
@@ -70,13 +72,13 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
                 </button>
 
                 <div className="mb-6">
-                    <h2 className="text-xl font-semibold">Create New User</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Add a new user to the platform.</p>
+                    <h2 className="text-xl font-semibold">Crear Nuevo Usuario</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Agrega un nuevo usuario a la plataforma.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Name</label>
+                        <label className="text-sm font-medium">Nombre</label>
                         <Input
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -95,7 +97,7 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Password</label>
+                        <label className="text-sm font-medium">Contraseña</label>
                         <Input
                             type="password"
                             value={formData.password}
@@ -106,26 +108,33 @@ export function CreateUserDialog({ currentUserRole }: CreateUserDialogProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Role</label>
+                        <label className="text-sm font-medium">Nivel de Permisos</label>
                         <select
                             value={formData.role}
                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <option value="employee">Employee</option>
-                            <option value="creador">Creador</option>
-                            <option value="lider">Líder</option>
-                            <option value="admin">Admin</option>
-                            {isSuperAdmin && (
-                                <option value="super_admin">Super Admin</option>
-                            )}
+                            {roleOrder.map((role) => {
+                                if (!assignableRoles.includes(role)) return null
+                                const info = RoleInfo[role]
+                                return (
+                                    <option key={role} value={role}>
+                                        Nv.{info.level} - {info.label}
+                                    </option>
+                                )
+                            })}
                         </select>
+                        {formData.role && RoleInfo[formData.role] && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                {RoleInfo[formData.role].description}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex justify-end pt-4">
                         <Button type="submit" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Create User
+                            Crear Usuario
                         </Button>
                     </div>
                 </form>
