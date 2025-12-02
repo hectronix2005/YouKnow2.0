@@ -13,7 +13,7 @@ model User {
   email         String    @unique
   password      String
   name          String
-  role          String    @default("employee") // employee, lider, admin, super_admin
+  role          String    @default("employee") // employee, creador, lider, admin, super_admin
   avatar        String?
   xp            Int       @default(0)
   level         Int       @default(1)

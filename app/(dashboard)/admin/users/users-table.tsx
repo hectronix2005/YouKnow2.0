@@ -67,6 +67,7 @@ export function UsersTable({ initialUsers, currentUserRole }: UsersTableProps) {
             case "super_admin": return <ShieldAlert className="h-4 w-4 text-red-500" />
             case "admin": return <ShieldCheck className="h-4 w-4 text-indigo-500" />
             case "lider": return <Shield className="h-4 w-4 text-green-500" />
+            case "creador": return <Shield className="h-4 w-4 text-purple-500" />
             default: return <User className="h-4 w-4 text-gray-500" />
         }
     }
@@ -118,6 +119,9 @@ export function UsersTable({ initialUsers, currentUserRole }: UsersTableProps) {
                                             <DropdownMenuContent align="start">
                                                 <DropdownMenuItem onClick={() => handleRoleChange(user.id, "employee")}>
                                                     <User className="mr-2 h-4 w-4" /> Employee
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, "creador")}>
+                                                    <Shield className="mr-2 h-4 w-4 text-purple-500" /> Creador
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleRoleChange(user.id, "lider")}>
                                                     <Shield className="mr-2 h-4 w-4" /> Líder

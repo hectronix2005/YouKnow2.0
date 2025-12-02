@@ -17,7 +17,7 @@ export async function PATCH(
         }
 
         // Validate role
-        const validRoles = ["employee", "lider", "admin", "super_admin"]
+        const validRoles = ["employee", "creador", "lider", "admin", "super_admin"]
         if (!validRoles.includes(role)) {
             return new NextResponse("Invalid role", { status: 400 })
         }
