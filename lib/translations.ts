@@ -36,6 +36,9 @@ export const es = {
         employeeRole: "Trabajar (Empleado)",
         liderRole: "Liderar (Líder)",
         demoCredentials: "Credenciales de Demo:",
+        invalidCredentials: "Correo o contraseña incorrectos",
+        accountNotFound: "No existe una cuenta con este correo",
+        connectionError: "Error de conexión. Intenta de nuevo.",
     },
     nav: {
         home: "Inicio",
@@ -164,6 +167,9 @@ export const en = {
         employeeRole: "Work (Employee)",
         liderRole: "Lead (Leader)",
         demoCredentials: "Demo Credentials:",
+        invalidCredentials: "Invalid email or password",
+        accountNotFound: "No account found with this email",
+        connectionError: "Connection error. Please try again.",
     },
     nav: {
         home: "Home",

@@ -209,6 +209,14 @@ export function ChecklistDashboard({ userId, userName, userRole }: ChecklistDash
     const pendingTasks = tasks.filter((t) => t.status === "pending")
     const completedTasks = tasks.filter((t) => t.status === "completed")
 
+    // Calculate daily stats from actual task list (more accurate than separate API)
+    const dailyFromTasks = {
+        total: tasks.length,
+        completed: completedTasks.length,
+        pending: pendingTasks.length,
+        compliance: tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 100
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             {/* Header */}
@@ -278,14 +286,15 @@ export function ChecklistDashboard({ userId, userName, userRole }: ChecklistDash
                 </div>
             )}
 
-            {/* Stats Section */}
-            {stats && isToday() && (
-                <div className="mb-8">
+            {/* Stats Section - Always visible, using task list for daily stats */}
+            {stats && (
+                <div className="mb-6">
                     <TaskStats
-                        daily={stats.daily}
+                        daily={dailyFromTasks}
                         weekly={stats.weekly}
                         monthly={stats.monthly}
                         onTimeRate={stats.onTimeRate}
+                        dateLabel={isToday() ? "Hoy" : selectedDate.toLocaleDateString("es", { day: "numeric", month: "short" })}
                     />
                 </div>
             )}

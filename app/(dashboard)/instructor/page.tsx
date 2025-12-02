@@ -7,17 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusCircle, BookOpen, Users, DollarSign, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-export default async function LiderDashboardPage() {
+export default async function InstructorDashboardPage() {
     const session = await auth()
 
     if (!session?.user) {
         redirect("/login")
     }
 
-    // Check if user is lider (or allow everyone to be lider for MVP)
+    // Check if user is instructor (or allow everyone to be instructor for MVP)
     // For MVP, we'll assume everyone can create courses or check role
     if (!isLeader(session.user.role)) {
-        // Optional: Redirect to become lider page or just allow it
+        // Optional: Redirect to become instructor page or just allow it
         // redirect("/dashboard")
     }
 
@@ -54,10 +54,10 @@ export default async function LiderDashboardPage() {
                             Dashboard
                         </Button>
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leader Dashboard</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Instructor Dashboard</h1>
                 </div>
                 <div className="flex gap-4">
-                    <Link href="/lider/create">
+                    <Link href="/instructor/create">
                         <Button>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             New Course
@@ -92,7 +92,7 @@ export default async function LiderDashboardPage() {
             {/* Courses List */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {courses.map((course) => (
-                    <Link key={course.id} href={`/lider/courses/${course.id}`}>
+                    <Link key={course.id} href={`/instructor/courses/${course.id}`}>
                         <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                             <CardHeader>
                                 <CardTitle className="line-clamp-1">{course.title}</CardTitle>

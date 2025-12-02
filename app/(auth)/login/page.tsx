@@ -31,13 +31,17 @@ export default function LoginPage() {
             })
 
             if (result?.error) {
-                setError(t.common.error)
+                if (result.error === "CredentialsSignin") {
+                    setError(t.auth.invalidCredentials)
+                } else {
+                    setError(t.auth.connectionError)
+                }
             } else {
                 router.push("/dashboard")
                 router.refresh()
             }
-        } catch (error) {
-            setError(t.common.error)
+        } catch {
+            setError(t.auth.connectionError)
         } finally {
             setLoading(false)
         }
@@ -120,7 +124,7 @@ export default function LoginPage() {
                             <div className="rounded-lg bg-indigo-50 p-4 text-xs dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50">
                                 <p className="font-semibold text-indigo-900 dark:text-indigo-300 mb-2">{t.auth.demoCredentials}</p>
                                 <div className="space-y-1 text-indigo-700 dark:text-indigo-400 font-mono">
-                                    <p>Employee: empleado@learnflow.com / Empleado123!</p>
+                                    <p>Employee: employee@learnflow.ai / employee123</p>
                                     <p>Líder: lider@learnflow.ai / lider123</p>
                                 </div>
                             </div>

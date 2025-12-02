@@ -127,7 +127,22 @@ export async function PATCH(
             }
         }
 
-        return NextResponse.json({ success: true })
+        // Fetch and return updated course with modules and lessons
+        const updatedCourse = await prisma.course.findUnique({
+            where: { id: courseId },
+            include: {
+                modules: {
+                    orderBy: { orderIndex: 'asc' },
+                    include: {
+                        lessons: {
+                            orderBy: { orderIndex: 'asc' }
+                        }
+                    }
+                }
+            }
+        })
+
+        return NextResponse.json({ success: true, modules: updatedCourse?.modules || [] })
     } catch (error) {
         console.error("[COURSE_PATCH]", error)
         return NextResponse.json(

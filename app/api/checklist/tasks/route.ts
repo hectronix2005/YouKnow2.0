@@ -1,14 +1,14 @@
 import { auth } from "@/lib/auth"
-import { isAdmin } from "@/lib/teacher"
+import { isAdmin, isLeader } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
 
-// GET all task templates (admin only)
+// GET all task templates (admin/leader only)
 export async function GET() {
     try {
         const session = await auth()
 
-        if (!session?.user || !isAdmin(session.user.role)) {
+        if (!session?.user || (!isAdmin(session.user.role) && !isLeader(session.user.role))) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
@@ -36,12 +36,12 @@ export async function GET() {
     }
 }
 
-// POST create new task template (admin only)
+// POST create new task template (admin/leader only)
 export async function POST(req: Request) {
     try {
         const session = await auth()
 
-        if (!session?.user || !isAdmin(session.user.role)) {
+        if (!session?.user || (!isAdmin(session.user.role) && !isLeader(session.user.role))) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 

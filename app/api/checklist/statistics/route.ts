@@ -1,29 +1,23 @@
 import { auth } from "@/lib/auth"
-import { isEmployee, isAdmin } from "@/lib/teacher"
+import { isEmployee, isAdmin, isLeader } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
 
-// Helper to get start of day/week/month
-function getStartOfDay(date: Date): Date {
-    const d = new Date(date)
-    d.setHours(0, 0, 0, 0)
-    return d
+// Helper to get start of day/week/month in UTC
+function getStartOfDayUTC(date: Date): Date {
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0))
 }
 
-function getStartOfWeek(date: Date): Date {
+function getStartOfWeekUTC(date: Date): Date {
     const d = new Date(date)
     const day = d.getDay()
     const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Monday start
     d.setDate(diff)
-    d.setHours(0, 0, 0, 0)
-    return d
+    return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0))
 }
 
-function getStartOfMonth(date: Date): Date {
-    const d = new Date(date)
-    d.setDate(1)
-    d.setHours(0, 0, 0, 0)
-    return d
+function getStartOfMonthUTC(date: Date): Date {
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0))
 }
 
 // Helper to calculate compliance rate
@@ -37,25 +31,25 @@ export async function GET(req: Request) {
     try {
         const session = await auth()
 
-        if (!session?.user || (!isEmployee(session.user.role) && !isAdmin(session.user.role))) {
+        if (!session?.user || (!isEmployee(session.user.role) && !isAdmin(session.user.role) && !isLeader(session.user.role))) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
         const { searchParams } = new URL(req.url)
         const employeeId = searchParams.get("employeeId")
 
-        const isAdminUser = isAdmin(session.user.role)
+        const isAdminUser = isAdmin(session.user.role) || isLeader(session.user.role)
 
         // If not admin, can only see own stats
         const targetEmployeeId = isAdminUser && employeeId ? employeeId : session.user.id
 
         const now = new Date()
-        const startOfToday = getStartOfDay(now)
-        const startOfWeek = getStartOfWeek(now)
-        const startOfMonth = getStartOfMonth(now)
+        const startOfToday = getStartOfDayUTC(now)
+        const startOfWeek = getStartOfWeekUTC(now)
+        const startOfMonth = getStartOfMonthUTC(now)
 
-        const endOfToday = new Date(startOfToday)
-        endOfToday.setHours(23, 59, 59, 999)
+        // End of day in UTC (23:59:59.999)
+        const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1)
 
         // Get all active assignments for employee
         const assignments = await prisma.taskAssignment.findMany({
@@ -78,11 +72,12 @@ export async function GET(req: Request) {
             },
         })
 
-        // Calculate daily stats
+        // Calculate daily stats - use UTC day/date from startOfToday
+        const dayOfWeek = startOfToday.getUTCDay()
+        const dayOfMonth = startOfToday.getUTCDate()
+
         const dailyAssignments = assignments.filter((a) => {
             const task = a.taskTemplate
-            const dayOfWeek = now.getDay()
-            const dayOfMonth = now.getDate()
 
             switch (task.frequency) {
                 case "daily":
@@ -181,91 +176,100 @@ export async function GET(req: Request) {
     }
 }
 
-// GET all employees statistics (admin only)
+// GET all employees statistics (admin only) - OPTIMIZED
 export async function POST(req: Request) {
     try {
         const session = await auth()
 
-        if (!session?.user || !isAdmin(session.user.role)) {
+        if (!session?.user || (!isAdmin(session.user.role) && !isLeader(session.user.role))) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        // Get all employees with task assignments
-        const employees = await prisma.user.findMany({
+        const now = new Date()
+        const startOfToday = getStartOfDayUTC(now)
+        const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1)
+
+        // Use UTC methods for day calculations
+        const dayOfWeekUTC = startOfToday.getUTCDay()
+        const dayOfMonthUTC = startOfToday.getUTCDate()
+
+        // OPTIMIZATION: Fetch ALL assignments with their completions in ONE query
+        const allAssignments = await prisma.taskAssignment.findMany({
             where: {
-                taskAssignments: {
-                    some: {
-                        isActive: true,
+                isActive: true,
+                taskTemplate: {
+                    isActive: true,
+                },
+            },
+            include: {
+                taskTemplate: true,
+                employee: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true,
+                    },
+                },
+                completions: {
+                    where: {
+                        scheduledDate: {
+                            gte: startOfToday,
+                            lte: endOfToday,
+                        },
                     },
                 },
             },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-            },
         })
 
-        const now = new Date()
-        const startOfToday = getStartOfDay(now)
+        // Group assignments by employee
+        const employeeMap = new Map<string, {
+            employee: { id: string; name: string; email: string; role: string }
+            assignments: typeof allAssignments
+        }>()
 
-        // Get daily compliance for each employee
-        const employeeStats = await Promise.all(
-            employees.map(async (employee) => {
-                const assignments = await prisma.taskAssignment.findMany({
-                    where: {
-                        employeeId: employee.id,
-                        isActive: true,
-                        taskTemplate: {
-                            isActive: true,
-                        },
-                    },
-                    include: {
-                        taskTemplate: true,
-                        completions: {
-                            where: {
-                                scheduledDate: {
-                                    gte: startOfToday,
-                                },
-                            },
-                        },
-                    },
+        allAssignments.forEach((assignment) => {
+            const empId = assignment.employee.id
+            if (!employeeMap.has(empId)) {
+                employeeMap.set(empId, {
+                    employee: assignment.employee,
+                    assignments: [],
                 })
+            }
+            employeeMap.get(empId)!.assignments.push(assignment)
+        })
 
-                // Filter for today's tasks
-                const dayOfWeek = now.getDay()
-                const dayOfMonth = now.getDate()
-
-                const todaysAssignments = assignments.filter((a) => {
-                    const task = a.taskTemplate
-                    switch (task.frequency) {
-                        case "daily":
-                            return true
-                        case "weekly":
-                            return task.scheduledDay === null || task.scheduledDay === dayOfWeek
-                        case "monthly":
-                            return task.scheduledDay === null || task.scheduledDay === dayOfMonth
-                        default:
-                            return false
-                    }
-                })
-
-                const completed = todaysAssignments.filter((a) =>
-                    a.completions.some((c) => c.status === "completed")
-                ).length
-
-                return {
-                    employee,
-                    daily: {
-                        total: todaysAssignments.length,
-                        completed,
-                        pending: todaysAssignments.length - completed,
-                        compliance: calculateCompliance(completed, todaysAssignments.length),
-                    },
+        // Calculate stats for each employee
+        const employeeStats = Array.from(employeeMap.values()).map(({ employee, assignments }) => {
+            // Filter for today's tasks
+            const todaysAssignments = assignments.filter((a) => {
+                const task = a.taskTemplate
+                switch (task.frequency) {
+                    case "daily":
+                        return true
+                    case "weekly":
+                        return task.scheduledDay === null || task.scheduledDay === dayOfWeekUTC
+                    case "monthly":
+                        return task.scheduledDay === null || task.scheduledDay === dayOfMonthUTC
+                    default:
+                        return false
                 }
             })
-        )
+
+            const completed = todaysAssignments.filter((a) =>
+                a.completions.some((c) => c.status === "completed")
+            ).length
+
+            return {
+                employee,
+                daily: {
+                    total: todaysAssignments.length,
+                    completed,
+                    pending: todaysAssignments.length - completed,
+                    compliance: calculateCompliance(completed, todaysAssignments.length),
+                },
+            }
+        })
 
         // Sort by compliance (lowest first to highlight those needing attention)
         employeeStats.sort((a, b) => a.daily.compliance - b.daily.compliance)
@@ -274,10 +278,10 @@ export async function POST(req: Request) {
             date: startOfToday.toISOString().split("T")[0],
             employees: employeeStats,
             summary: {
-                totalEmployees: employees.length,
+                totalEmployees: employeeStats.length,
                 averageCompliance: Math.round(
                     employeeStats.reduce((sum, e) => sum + e.daily.compliance, 0) /
-                        (employeeStats.length || 1)
+                    (employeeStats.length || 1)
                 ),
             },
         })

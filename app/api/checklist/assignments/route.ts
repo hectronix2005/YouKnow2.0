@@ -1,14 +1,14 @@
 import { auth } from "@/lib/auth"
-import { isAdmin } from "@/lib/teacher"
+import { isAdmin, isLeader } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
 
-// GET all assignments (admin only)
+// GET all assignments (admin/leader only)
 export async function GET() {
     try {
         const session = await auth()
 
-        if (!session?.user || !isAdmin(session.user.role)) {
+        if (!session?.user || (!isAdmin(session.user.role) && !isLeader(session.user.role))) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 

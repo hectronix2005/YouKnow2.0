@@ -2,11 +2,10 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
 
-// Helper to get today's date at midnight
-function getTodayDate(): Date {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return today
+// Helper to get today's date at UTC midnight
+function getTodayDateUTC(): Date {
+    const now = new Date()
+    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0))
 }
 
 // Helper to check if a task should appear for a specific date
@@ -14,8 +13,9 @@ function shouldTaskAppearOnDate(task: {
     frequency: string
     scheduledDay: number | null
 }, targetDate: Date): boolean {
-    const dayOfWeek = targetDate.getDay() // 0-6, 0=Sunday
-    const dayOfMonth = targetDate.getDate() // 1-31
+    // Use UTC methods since targetDate is in UTC
+    const dayOfWeek = targetDate.getUTCDay() // 0-6, 0=Sunday
+    const dayOfMonth = targetDate.getUTCDate() // 1-31
 
     switch (task.frequency) {
         case "daily":
@@ -38,22 +38,23 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
+
         const { searchParams } = new URL(req.url)
         const dateParam = searchParams.get("date")
 
-        // Parse date or use today
+        // Parse date or use today - use UTC to match complete route
         let targetDate: Date
         if (dateParam) {
-            // Parse date correctly handling timezone
-            // dateParam format: YYYY-MM-DD
+            // dateParam format: YYYY-MM-DD, parse as UTC midnight
             const [year, month, day] = dateParam.split('-').map(Number)
-            targetDate = new Date(year, month - 1, day, 0, 0, 0, 0)
+            targetDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
         } else {
-            targetDate = getTodayDate()
+            targetDate = getTodayDateUTC()
         }
 
-        const endOfDay = new Date(targetDate)
-        endOfDay.setHours(23, 59, 59, 999)
+        // End of day in UTC (23:59:59.999)
+        const endOfDay = new Date(targetDate.getTime() + 24 * 60 * 60 * 1000 - 1)
+
 
         // Get all active assignments for this employee
         const assignments = await prisma.taskAssignment.findMany({

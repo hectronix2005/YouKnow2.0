@@ -46,16 +46,18 @@ export async function POST(req: Request) {
         }
 
         // Parse scheduled date or use today
+        // Use UTC to avoid timezone issues
         let taskDate: Date
         if (scheduledDate) {
-            taskDate = new Date(scheduledDate)
+            // scheduledDate comes as "YYYY-MM-DD", parse as UTC midnight
+            const [year, month, day] = scheduledDate.split('-').map(Number)
+            taskDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
         } else {
-            taskDate = new Date()
+            const now = new Date()
+            taskDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0))
         }
-        taskDate.setHours(0, 0, 0, 0)
 
-        const endOfDay = new Date(taskDate)
-        endOfDay.setHours(23, 59, 59, 999)
+        const endOfDay = new Date(taskDate.getTime() + 24 * 60 * 60 * 1000 - 1)
 
         // Check if already completed for this date
         const existingCompletion = await prisma.taskCompletion.findFirst({

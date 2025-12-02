@@ -60,9 +60,14 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Aplicar fuente mono a elementos de código */
+code, kbd, pre, samp {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 /* Utilities */

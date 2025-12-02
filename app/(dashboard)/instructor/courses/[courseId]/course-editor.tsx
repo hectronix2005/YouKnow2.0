@@ -125,12 +125,6 @@ export function CourseEditor({ course }: CourseEditorProps) {
 
             if (!response.ok) throw new Error("Failed to save")
 
-            // Get updated modules with real IDs from the response
-            const data = await response.json()
-            if (data.modules) {
-                setModules(data.modules)
-            }
-
             setHasChanges(false)
             router.refresh()
             showToast("¡Curso guardado exitosamente!", "success", 5000)
@@ -174,7 +168,7 @@ export function CourseEditor({ course }: CourseEditorProps) {
         <div className="p-6 max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
-                    <Link href="/lider">
+                    <Link href="/instructor">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Back
