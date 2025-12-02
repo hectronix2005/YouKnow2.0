@@ -44,8 +44,10 @@ export async function GET(req: Request) {
         // Parse date or use today
         let targetDate: Date
         if (dateParam) {
-            targetDate = new Date(dateParam)
-            targetDate.setHours(0, 0, 0, 0)
+            // Parse date correctly handling timezone
+            // dateParam format: YYYY-MM-DD
+            const [year, month, day] = dateParam.split('-').map(Number)
+            targetDate = new Date(year, month - 1, day, 0, 0, 0, 0)
         } else {
             targetDate = getTodayDate()
         }
