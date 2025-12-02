@@ -1,6 +1,84 @@
 import { PrismaClient } from '@prisma/client'
+import * as readline from 'readline'
 
 const prisma = new PrismaClient()
+
+// ⚠️ PROTECCIÓN CONTRA PÉRDIDA DE DATOS
+// Este seed ELIMINA todos los cursos, módulos, lecciones e inscripciones existentes
+// Solo debe ejecutarse en desarrollo o con confirmación explícita
+
+async function confirmDangerousOperation(): Promise<boolean> {
+    // Verificar si estamos en producción
+    const isProduction = process.env.NODE_ENV === 'production'
+    const dbUrl = process.env.MONGODB_URI || ''
+    const isAtlasProduction = dbUrl.includes('mongodb+srv') && !dbUrl.includes('localhost')
+
+    // Contar datos existentes
+    const courseCount = await prisma.course.count()
+    const userCount = await prisma.user.count()
+    const enrollmentCount = await prisma.enrollment.count()
+
+    // Si hay datos de usuarios reales (no solo los demo)
+    const realUsers = await prisma.user.count({
+        where: {
+            email: {
+                notIn: ['lider@learnflow.ai', 'employee@learnflow.ai', 'instructor@learnflow.ai']
+            }
+        }
+    })
+
+    // Permitir ejecución automática SOLO si:
+    // 1. Hay flag --force
+    // 2. O no hay datos reales (base de datos vacía o solo demo)
+    const hasForceFlag = process.argv.includes('--force')
+    const hasNoRealData = courseCount === 0 || (courseCount <= 5 && realUsers === 0)
+
+    if (hasForceFlag) {
+        console.log('⚠️  Flag --force detectado. Procediendo sin confirmación...')
+        return true
+    }
+
+    if (hasNoRealData && !isProduction) {
+        console.log('ℹ️  Base de datos sin datos de producción. Procediendo...')
+        return true
+    }
+
+    // Mostrar advertencia
+    console.log('\n' + '='.repeat(60))
+    console.log('⚠️  ADVERTENCIA: OPERACIÓN DESTRUCTIVA')
+    console.log('='.repeat(60))
+    console.log(`\n📊 Datos que serán ELIMINADOS permanentemente:`)
+    console.log(`   - Cursos: ${courseCount}`)
+    console.log(`   - Usuarios reales: ${realUsers}`)
+    console.log(`   - Inscripciones: ${enrollmentCount}`)
+    console.log(`\n🔗 Base de datos: ${isAtlasProduction ? 'MongoDB Atlas (PRODUCCIÓN)' : 'Local/Dev'}`)
+
+    if (isProduction || isAtlasProduction) {
+        console.log('\n❌ BLOQUEADO: No se puede ejecutar seed en producción.')
+        console.log('   Para forzar, usa: npx tsx prisma/seed.ts --force')
+        console.log('   O configura NODE_ENV=development')
+        return false
+    }
+
+    // Pedir confirmación interactiva
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    })
+
+    return new Promise((resolve) => {
+        rl.question('\n¿Deseas continuar y ELIMINAR todos los datos? (escribe "SI ELIMINAR"): ', (answer) => {
+            rl.close()
+            if (answer === 'SI ELIMINAR') {
+                console.log('\n✅ Confirmación recibida. Procediendo...\n')
+                resolve(true)
+            } else {
+                console.log('\n❌ Operación cancelada.\n')
+                resolve(false)
+            }
+        })
+    })
+}
 
 // Videos de muestra confiables y de dominio público
 // Múltiples fuentes para redundancia
@@ -30,8 +108,27 @@ function getVideoUrl(index: number): string {
 async function main() {
     console.log('🌱 Starting seed...')
 
+    // ⚠️ VERIFICAR ANTES DE ELIMINAR DATOS
+    const confirmed = await confirmDangerousOperation()
+    if (!confirmed) {
+        console.log('🛑 Seed cancelado. No se eliminaron datos.')
+        process.exit(0)
+    }
+
+    // Crear backup antes de eliminar (solo IDs y títulos para referencia)
+    console.log('📦 Creando registro de datos existentes...')
+    const existingCourses = await prisma.course.findMany({
+        select: { id: true, title: true, instructorId: true, createdAt: true }
+    })
+    if (existingCourses.length > 0) {
+        console.log('   Cursos que serán eliminados:')
+        existingCourses.forEach(c => {
+            console.log(`   - ${c.title} (ID: ${c.id}, creado: ${c.createdAt})`)
+        })
+    }
+
     // Clear existing data to allow re-seeding
-    console.log('🧹 Cleaning existing data...')
+    console.log('\n🧹 Cleaning existing data...')
     await prisma.lessonProgress.deleteMany({})
     await prisma.achievement.deleteMany({})
     await prisma.enrollment.deleteMany({})
@@ -52,7 +149,7 @@ async function main() {
     const lider = await prisma.user.create({
         data: {
             email: 'lider@learnflow.ai',
-            password: '$2b$10$LiLPE8JgvN./9SerqXv1nuSmLJ4gzqz71r2k4LFC1u12A5M.AZMuC', // password: lider123
+            password: '$2b$10$NuOKjM1BJ2PE61GSSEzf3e4jdZFQ.ZqBk1vSKvxwW4gvKcwSZczRe', // password: lider123
             name: 'Dr. Sarah Johnson',
             role: 'lider',
             xp: 5000,
@@ -67,7 +164,7 @@ async function main() {
     const employee = await prisma.user.create({
         data: {
             email: 'employee@learnflow.ai',
-            password: '$2b$10$SefAlmsfttPpV23O73tGeuifB/xa1Q5nAsFfRFB/cnyhBJF32EQje', // password: employee123
+            password: '$2b$10$wwBnY67zuKHWulNq6NoDbOzFPEIkcsRf6LSg.pLG0nlnBgBYttYRO', // password: employee123
             name: 'Carlos Méndez',
             role: 'employee',
             xp: 150,

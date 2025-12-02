@@ -42,3 +42,6 @@ next-env.d.ts
 
 # temp files
 /temp
+
+# backups (mantener localmente, no subir al repo)
+/backups

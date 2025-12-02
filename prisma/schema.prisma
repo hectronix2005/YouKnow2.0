@@ -41,10 +41,15 @@ model Course {
   thumbnail       String?
   price           Float     @default(0)
   isFree          Boolean   @default(true)
-  status          String    @default("draft") // draft, published
+  status          String    @default("draft") // draft, published, deleted
   publishedAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  // Soft delete - para recuperar cursos eliminados
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+  deletedById     String?   @db.ObjectId
 
   instructorId    String    @db.ObjectId
   instructor      User      @relation("InstructorCourses", fields: [instructorId], references: [id])
