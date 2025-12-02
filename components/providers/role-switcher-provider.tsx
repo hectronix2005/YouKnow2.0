@@ -30,7 +30,7 @@ export function RoleSwitcherProvider({ children, userRole }: RoleSwitcherProvide
     useEffect(() => {
         // Load saved active role from localStorage
         const saved = localStorage.getItem(`activeRole_${userRole}`)
-        if (saved && availableRoles.includes(saved)) {
+        if (saved && availableRoles.includes(saved as typeof availableRoles[number])) {
             setActiveRoleState(saved)
         }
     }, [userRole, availableRoles])
