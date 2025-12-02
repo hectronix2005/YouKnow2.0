@@ -1,6 +1,6 @@
 "use client"
 
-import { Navbar } from "@/components/layout/navbar"
+import { NavbarWithRoleSwitcher } from "@/components/layout/navbar-with-role-switcher"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Clock, Users, BookOpen, CheckCircle, PlayCircle, Award, ShieldCheck } from "lucide-react"
@@ -30,7 +30,7 @@ export function CourseDetailClient({
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-            <Navbar user={user} onSignOut={onSignOut} />
+            <NavbarWithRoleSwitcher user={user} onSignOut={onSignOut} />
 
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Course Header */}

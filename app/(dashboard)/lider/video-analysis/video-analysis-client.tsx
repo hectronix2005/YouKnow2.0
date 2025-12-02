@@ -1,6 +1,6 @@
 "use client"
 
-import { Navbar } from "@/components/layout/navbar"
+import { NavbarWithRoleSwitcher } from "@/components/layout/navbar-with-role-switcher"
 import { VideoAnalyzer } from "@/components/lider/video-analyzer"
 import { User } from "@prisma/client"
 
@@ -12,7 +12,7 @@ interface VideoAnalysisClientProps {
 export function VideoAnalysisClient({ user, onSignOut }: VideoAnalysisClientProps) {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-            <Navbar user={user} onSignOut={onSignOut} />
+            <NavbarWithRoleSwitcher user={user} onSignOut={onSignOut} />
 
             <div className="max-w-5xl mx-auto px-4 py-8">
                 <div className="mb-8">

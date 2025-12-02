@@ -1,6 +1,6 @@
 "use client"
 
-import { Navbar } from "@/components/layout/navbar"
+import { NavbarWithRoleSwitcher } from "@/components/layout/navbar-with-role-switcher"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -68,7 +68,7 @@ export function LearnClient({
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-            <Navbar user={user} onSignOut={onSignOut} />
+            <NavbarWithRoleSwitcher user={user} onSignOut={onSignOut} />
 
             <div className="flex flex-1 relative overflow-hidden">
                 {/* Sidebar Toggle (Mobile) */}

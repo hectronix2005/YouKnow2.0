@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Home, LogOut, GraduationCap, Globe, ShieldCheck, CheckSquare, Palette, Users, Shield } from "lucide-react"
+import { BookOpen, Home, LogOut, GraduationCap, Globe, ShieldCheck, CheckSquare, Palette, Users, ChevronDown, RotateCcw, User, ShieldAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
 import {
@@ -11,7 +11,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { isCreator, isLeader, isAdmin, getRoleInfo, getRoleLevel } from "@/lib/teacher"
+import { isCreator, isLeader, isAdmin, getRoleInfo, getRoleLevel, Role, RoleInfo } from "@/lib/teacher"
+import { useRoleSwitcher } from "@/components/providers/role-switcher-provider"
 
 interface NavbarProps {
     user?: {
@@ -26,10 +27,46 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
     const pathname = usePathname()
     const { t, language, setLanguage } = useLanguage()
 
+    // Try to use role switcher, fallback to user's actual role
+    let activeRole = user?.role || ""
+    let originalRole = user?.role || ""
+    let isUsingDifferentRole = false
+    let setActiveRole: ((role: string) => void) | null = null
+    let resetToOriginal: (() => void) | null = null
+    let availableRoles: string[] = []
+
+    try {
+        const roleSwitcher = useRoleSwitcher()
+        activeRole = roleSwitcher.activeRole
+        originalRole = roleSwitcher.originalRole
+        isUsingDifferentRole = roleSwitcher.isUsingDifferentRole
+        setActiveRole = roleSwitcher.setActiveRole
+        resetToOriginal = roleSwitcher.resetToOriginal
+        availableRoles = roleSwitcher.availableRoles
+    } catch {
+        // Role switcher not available, use defaults
+        if (user) {
+            const originalLevel = getRoleLevel(user.role)
+            const roleOrder = [Role.EMPLOYEE, Role.CREADOR, Role.LIDER, Role.ADMIN, Role.SUPER_ADMIN]
+            availableRoles = roleOrder.filter(role => getRoleLevel(role) <= originalLevel)
+        }
+    }
+
     const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/")
 
-    const roleInfo = user ? getRoleInfo(user.role) : null
-    const userLevel = user ? getRoleLevel(user.role) : 0
+    const activeRoleInfo = getRoleInfo(activeRole)
+    const originalRoleInfo = getRoleInfo(originalRole)
+    const userLevel = getRoleLevel(originalRole)
+
+    const getRoleIcon = (role: string) => {
+        switch (role) {
+            case "super_admin": return <ShieldAlert className="h-4 w-4" />
+            case "admin": return <ShieldCheck className="h-4 w-4" />
+            case "lider": return <Users className="h-4 w-4" />
+            case "creador": return <Palette className="h-4 w-4" />
+            default: return <User className="h-4 w-4" />
+        }
+    }
 
     return (
         <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/80">
@@ -46,7 +83,7 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                         </span>
                     </Link>
 
-                    {/* Navigation */}
+                    {/* Navigation - based on ACTIVE role */}
                     {user && (
                         <div className="hidden md:flex md:items-center md:space-x-1">
                             {/* Level 1+: Dashboard */}
@@ -85,8 +122,8 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Button>
                             </Link>
 
-                            {/* Level 2+: Creador */}
-                            {isCreator(user.role) && (
+                            {/* Level 2+: Creador - based on ACTIVE role */}
+                            {isCreator(activeRole) && (
                                 <Link href="/creador">
                                     <Button
                                         variant={isActive("/creador") ? "secondary" : "ghost"}
@@ -99,8 +136,8 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Link>
                             )}
 
-                            {/* Level 3+: Lider */}
-                            {isLeader(user.role) && (
+                            {/* Level 3+: Lider - based on ACTIVE role */}
+                            {isLeader(activeRole) && (
                                 <Link href="/lider">
                                     <Button
                                         variant={isActive("/lider") ? "secondary" : "ghost"}
@@ -113,8 +150,8 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Link>
                             )}
 
-                            {/* Level 4+: Admin */}
-                            {isAdmin(user.role) && (
+                            {/* Level 4+: Admin - based on ACTIVE role */}
+                            {isAdmin(activeRole) && (
                                 <Link href="/admin/users">
                                     <Button
                                         variant={isActive("/admin") ? "secondary" : "ghost"}
@@ -154,16 +191,79 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 <div className="hidden md:flex md:items-center md:gap-2">
                                     <div className="text-right">
                                         <p className="text-sm font-medium">{user.name}</p>
-                                        <div className="flex items-center justify-end gap-1">
-                                            {roleInfo && (
-                                                <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${roleInfo.bgColor} ${roleInfo.color}`}>
-                                                    Nv.{roleInfo.level}
+
+                                        {/* Role Switcher Dropdown - only if user has level 2+ */}
+                                        {userLevel >= 2 && setActiveRole ? (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="flex items-center justify-end gap-1 hover:opacity-80 transition-opacity cursor-pointer">
+                                                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${activeRoleInfo.bgColor} ${activeRoleInfo.color}`}>
+                                                            Nv.{activeRoleInfo.level}
+                                                        </span>
+                                                        <span className={`text-xs ${activeRoleInfo.color}`}>
+                                                            {activeRoleInfo.label}
+                                                        </span>
+                                                        <ChevronDown className="h-3 w-3 text-gray-400" />
+                                                        {isUsingDifferentRole && (
+                                                            <span className="text-xs text-amber-500 font-medium">(vista)</span>
+                                                        )}
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-64">
+                                                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 border-b mb-1">
+                                                        Cambiar vista de rol
+                                                    </div>
+                                                    {availableRoles.map((role) => {
+                                                        const info = RoleInfo[role]
+                                                        const isCurrentActive = activeRole === role
+                                                        const isOriginal = originalRole === role
+
+                                                        return (
+                                                            <DropdownMenuItem
+                                                                key={role}
+                                                                onClick={() => setActiveRole(role)}
+                                                                className={`flex items-center gap-2 cursor-pointer ${isCurrentActive ? 'bg-accent' : ''}`}
+                                                            >
+                                                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${info.bgColor} ${info.color}`}>
+                                                                    {info.level}
+                                                                </span>
+                                                                <span className={info.color}>
+                                                                    {getRoleIcon(role)}
+                                                                </span>
+                                                                <div className="flex flex-col flex-1">
+                                                                    <span className={`text-sm ${info.color}`}>
+                                                                        {info.label}
+                                                                        {isOriginal && <span className="text-gray-400 ml-1">(tu rol)</span>}
+                                                                    </span>
+                                                                    <span className="text-xs text-gray-400">{info.description}</span>
+                                                                </div>
+                                                            </DropdownMenuItem>
+                                                        )
+                                                    })}
+                                                    {isUsingDifferentRole && resetToOriginal && (
+                                                        <>
+                                                            <div className="border-t my-1" />
+                                                            <DropdownMenuItem
+                                                                onClick={resetToOriginal}
+                                                                className="flex items-center gap-2 text-amber-600 cursor-pointer"
+                                                            >
+                                                                <RotateCcw className="h-4 w-4" />
+                                                                <span>Volver a mi rol original</span>
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        ) : (
+                                            <div className="flex items-center justify-end gap-1">
+                                                <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${activeRoleInfo.bgColor} ${activeRoleInfo.color}`}>
+                                                    Nv.{activeRoleInfo.level}
                                                 </span>
-                                            )}
-                                            <span className={`text-xs ${roleInfo?.color || 'text-gray-500'}`}>
-                                                {roleInfo?.label || user.role}
-                                            </span>
-                                        </div>
+                                                <span className={`text-xs ${activeRoleInfo.color}`}>
+                                                    {activeRoleInfo.label}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <Button
