@@ -1,7 +1,7 @@
 "use client"
 
 import { Navbar } from "@/components/layout/navbar"
-import { VideoAnalyzer } from "@/components/creador/video-analyzer"
+import { VideoAnalyzer } from "@/components/lider/video-analyzer"
 import { User } from "@prisma/client"
 
 interface VideoAnalysisClientProps {
