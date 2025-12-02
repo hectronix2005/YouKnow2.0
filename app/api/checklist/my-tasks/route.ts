@@ -1,5 +1,4 @@
 import { auth } from "@/lib/auth"
-import { isEmployee } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
 
@@ -36,7 +35,7 @@ export async function GET(req: Request) {
     try {
         const session = await auth()
 
-        if (!session?.user || !isEmployee(session.user.role)) {
+        if (!session?.user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
