@@ -45,7 +45,7 @@ export const es = {
         dashboard: "Panel",
         courses: "Cursos",
         checklist: "Tareas",
-        lider: "Líder",
+        creador: "Creador",
         profile: "Perfil",
         settings: "Configuración",
     },
@@ -114,17 +114,17 @@ export const es = {
         viewCertificate: "Ver Certificado",
         videoPlaceholder: "El contenido de video estará disponible pronto",
     },
-    lider: {
-        title: "Panel de Líder",
-        subtitle: "Gestiona tus cursos y sigue tu rendimiento",
-        totalCourses: "Total Cursos",
+    creador: {
+        title: "Panel del Creador",
+        subtitle: "Gestiona tus cursos y rendimiento",
+        totalCourses: "Total de Cursos",
         totalEnrolled: "Total Inscritos",
         totalRevenue: "Ingresos Totales",
         yourCourses: "Tus Cursos",
         published: "Publicado",
         draft: "Borrador",
         createCourse: "Crear Nuevo Curso",
-        earned: "ganados",
+        earned: "ganado",
         enrolled: "inscritos",
     }
 }
@@ -176,7 +176,7 @@ export const en = {
         dashboard: "Dashboard",
         courses: "Courses",
         checklist: "Tasks",
-        lider: "Leader",
+        creador: "Creator",
         profile: "Profile",
         settings: "Settings",
     },
@@ -245,9 +245,9 @@ export const en = {
         viewCertificate: "View Certificate",
         videoPlaceholder: "Video content will be available soon",
     },
-    lider: {
-        title: "Leader Dashboard",
-        subtitle: "Manage your courses and track performance",
+    creador: {
+        title: "Creator Panel",
+        subtitle: "Manage your courses and performance",
         totalCourses: "Total Courses",
         totalEnrolled: "Total Enrolled",
         totalRevenue: "Total Revenue",
