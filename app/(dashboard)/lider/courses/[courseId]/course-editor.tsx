@@ -174,7 +174,7 @@ export function CourseEditor({ course }: CourseEditorProps) {
         <div className="p-6 max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
-                    <Link href="/lider">
+                    <Link href="/creador">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Back

@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { isCreator, isLeader, isAdmin, getRoleInfo, getRoleLevel, Role, RoleInfo } from "@/lib/teacher"
+import { isCreator, isAdmin, getRoleInfo, getRoleLevel, Role, RoleInfo } from "@/lib/teacher"
 import { useRoleSwitcher } from "@/components/providers/role-switcher-provider"
 
 interface NavbarProps {
@@ -122,30 +122,16 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Button>
                             </Link>
 
-                            {/* Level 2+: Creador - based on ACTIVE role */}
+                            {/* Level 2+: Creador - both creador and lider use this interface */}
                             {isCreator(activeRole) && (
                                 <Link href="/creador">
                                     <Button
-                                        variant={isActive("/creador") ? "secondary" : "ghost"}
+                                        variant={(isActive("/creador") || isActive("/lider")) ? "secondary" : "ghost"}
                                         size="sm"
-                                        className={isActive("/creador") ? "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300" : ""}
+                                        className={(isActive("/creador") || isActive("/lider")) ? "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300" : ""}
                                     >
                                         <Palette className="mr-2 h-4 w-4" />
                                         Creador
-                                    </Button>
-                                </Link>
-                            )}
-
-                            {/* Level 3+: Lider - based on ACTIVE role */}
-                            {isLeader(activeRole) && (
-                                <Link href="/lider">
-                                    <Button
-                                        variant={isActive("/lider") ? "secondary" : "ghost"}
-                                        size="sm"
-                                        className={isActive("/lider") ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300" : ""}
-                                    >
-                                        <Users className="mr-2 h-4 w-4" />
-                                        {t.nav.lider}
                                     </Button>
                                 </Link>
                             )}
