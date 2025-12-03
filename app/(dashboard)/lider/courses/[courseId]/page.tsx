@@ -1,11 +1,41 @@
-import { redirect } from "next/navigation"
+import { redirect, notFound } from "next/navigation"
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/db"
+import { CourseEditor } from "./course-editor"
 
-// Lider module merged with Creador - redirect to Creador
-export default async function LiderCourseEditPage({
+export default async function EditCoursePage({
     params,
 }: {
     params: Promise<{ courseId: string }>
 }) {
     const { courseId } = await params
-    redirect(`/creador/courses/${courseId}`)
+    const session = await auth()
+
+    if (!session?.user) {
+        redirect("/login")
+    }
+
+    const course = await prisma.course.findUnique({
+        where: { id: courseId },
+        include: {
+            modules: {
+                include: {
+                    lessons: {
+                        orderBy: { orderIndex: "asc" }
+                    }
+                },
+                orderBy: { orderIndex: "asc" }
+            }
+        }
+    })
+
+    if (!course) {
+        notFound()
+    }
+
+    if (course.instructorId !== session.user.id) {
+        redirect("/lider")
+    }
+
+    return <CourseEditor course={course} />
 }

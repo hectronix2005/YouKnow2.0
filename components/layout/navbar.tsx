@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { isCreator, isAdmin, getRoleInfo, getRoleLevel, Role, RoleInfo } from "@/lib/teacher"
+import { isCreator, isLeader, isAdmin, getRoleInfo, getRoleLevel, Role, RoleInfo } from "@/lib/teacher"
 import { useRoleSwitcher } from "@/components/providers/role-switcher-provider"
 
 interface NavbarProps {
@@ -122,13 +122,13 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </Button>
                             </Link>
 
-                            {/* Level 2+: Creador - both creador and lider use this interface */}
+                            {/* Level 2+: Creador (uses /lider routes) - both creador and lider roles */}
                             {isCreator(activeRole) && (
-                                <Link href="/creador">
+                                <Link href="/lider">
                                     <Button
-                                        variant={(isActive("/creador") || isActive("/lider")) ? "secondary" : "ghost"}
+                                        variant={isActive("/lider") ? "secondary" : "ghost"}
                                         size="sm"
-                                        className={(isActive("/creador") || isActive("/lider")) ? "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300" : ""}
+                                        className={isActive("/lider") ? "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300" : ""}
                                     >
                                         <Palette className="mr-2 h-4 w-4" />
                                         Creador
