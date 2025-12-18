@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
-import { isLeader } from "@/lib/teacher"
+import { isCreator, isLeader } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusCircle, BookOpen, Users, DollarSign, ArrowLeft } from "lucide-react"
+import { PlusCircle, BookOpen, Users, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 export default async function LiderDashboardPage() {
@@ -14,12 +14,12 @@ export default async function LiderDashboardPage() {
         redirect("/login")
     }
 
-    // Check if user is leader or higher
-    if (!isLeader(session.user.role)) {
+    // Both creador (level 2) and lider (level 3) can access this page
+    if (!isCreator(session.user.role)) {
         redirect("/dashboard")
     }
 
-    // Leaders and admins can see all courses, regular instructors only see their own
+    // Leaders and admins can see all courses, regular creators only see their own
     const isLeaderOrAdmin = isLeader(session.user.role)
 
     const courses = await prisma.course.findMany({
@@ -52,13 +52,13 @@ export default async function LiderDashboardPage() {
                             Dashboard
                         </Button>
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leader Dashboard</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Panel del Creador</h1>
                 </div>
                 <div className="flex gap-4">
                     <Link href="/lider/create">
                         <Button>
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            New Course
+                            Nuevo Curso
                         </Button>
                     </Link>
                 </div>
@@ -68,7 +68,7 @@ export default async function LiderDashboardPage() {
             <div className="grid gap-6 md:grid-cols-2 mb-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-500">Total Courses</CardTitle>
+                        <CardTitle className="text-sm font-medium text-gray-500">Total de Cursos</CardTitle>
                         <BookOpen className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
@@ -77,7 +77,7 @@ export default async function LiderDashboardPage() {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-500">Total Enrolled</CardTitle>
+                        <CardTitle className="text-sm font-medium text-gray-500">Total Inscritos</CardTitle>
                         <Users className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>

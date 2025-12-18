@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import { SessionProvider } from "@/components/providers/session-provider";
 
 export default function RootLayout({
   children,
@@ -35,11 +36,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${geistSans.className} antialiased`}
         suppressHydrationWarning
       >
-        <LanguageProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </LanguageProvider>
+        <SessionProvider>
+          <LanguageProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </LanguageProvider>
+        </SessionProvider>
       </body>
     </html>
   );

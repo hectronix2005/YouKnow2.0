@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    trustHost: true,
     providers: [
         CredentialsProvider({
             name: "credentials",
@@ -45,6 +46,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
     ],
     callbacks: {
+        authorized({ auth, request: { nextUrl } }) {
+            const isLoggedIn = !!auth?.user
+            const path = nextUrl.pathname
+
+            // Public routes - always allow
+            const isPublicRoute = path === "/" ||
+                                  path.startsWith("/login") ||
+                                  path.startsWith("/register") ||
+                                  path.startsWith("/courses") ||
+                                  path.startsWith("/checklist")
+
+            if (isPublicRoute) {
+                return true
+            }
+
+            // Protected routes - require login
+            const isProtectedRoute = path.startsWith("/dashboard") ||
+                                     path.startsWith("/lider") ||
+                                     path.startsWith("/creador") ||
+                                     path.startsWith("/admin")
+
+            if (isProtectedRoute && !isLoggedIn) {
+                return false
+            }
+
+            return true
+        },
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id

@@ -130,7 +130,7 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                 </button>
                             </Link>
 
-                            {/* Level 2+: Creador - based on ACTIVE role */}
+                            {/* Level 2+: Creador (uses /lider routes) - both creador and lider roles */}
                             {isCreator(activeRole) && (
                                 <Link href="/creador">
                                     <button

@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
+import { isCreator } from "@/lib/teacher"
 import { VideoAnalysisClient } from "./video-analysis-client"
 
 export default async function VideoAnalysisPage() {
@@ -18,7 +19,8 @@ export default async function VideoAnalysisPage() {
         redirect('/login')
     }
 
-    if (user.role !== 'lider') {
+    // Both creador and lider can access video analysis
+    if (!isCreator(user.role)) {
         redirect('/dashboard')
     }
 
