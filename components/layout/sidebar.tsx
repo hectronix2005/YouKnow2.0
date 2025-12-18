@@ -45,7 +45,7 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
 
     const secondaryNavItems = [
         { href: "/checklist", icon: CheckSquare, label: t.sidebar.tasks, show: true },
-        { href: "/certificates", icon: Award, label: t.sidebar.achievements, show: true },
+        { href: "/certificates", icon: Award, label: t.sidebar.certificates, show: true },
         { href: "/creador", icon: Palette, label: t.sidebar.creator, show: isCreator(user.role) },
         { href: "/lider", icon: Users, label: t.sidebar.leader, show: isLeader(user.role) },
         { href: "/admin/users", icon: ShieldCheck, label: t.sidebar.admin, show: isAdmin(user.role) },
