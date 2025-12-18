@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Sidebar } from "@/components/layout/sidebar"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
@@ -55,6 +55,7 @@ interface FolderType {
     name: string
     color: string
     courseIds: string[] // Course IDs assigned to this folder
+    kahootIds: string[] // Kahoot IDs assigned to this folder
 }
 
 type QuestionType = "quiz" | "truefalse" | "poll" | "puzzle" | "typing"
@@ -91,7 +92,7 @@ interface KahootType {
     difficulty?: "easy" | "medium" | "hard"
 }
 
-// Demo Kahoots Data
+// Demo Knows Data
 const DEMO_KAHOOTS: KahootType[] = [
     {
         id: "demo-math-1",
@@ -327,10 +328,11 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
 
     // Drag and drop state
     const [draggedCourseId, setDraggedCourseId] = useState<string | null>(null)
+    const [draggedKahootId, setDraggedKahootId] = useState<string | null>(null)
     const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
 
     // Kahoot management state
-    const [kahoots, setKahoots] = useState<KahootType[]>([])
+    const [kahoots, setKahoots] = useState<KahootType[]>(DEMO_KAHOOTS)
     // Kahoot tab from URL
     const kahootTabFromUrl = searchParams.get("kahootTab") as KahootTabType | null
     const validKahootTabs: KahootTabType[] = ["all", "drafts", "published", "favorites"]
@@ -360,69 +362,106 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
     const colors = ["#e21b3c", "#1368ce", "#26890c", "#d89e00", "#46178f", "#00cec8"]
     const getColor = (index: number) => colors[index % colors.length]
 
-    // Refs to track if data has been loaded from localStorage
-    const foldersLoadedRef = useRef(false)
-    const kahoosLoadedRef = useRef(false)
+    // Track if component has mounted (to avoid hydration issues)
+    const [hasMounted, setHasMounted] = useState(false)
 
-    // Load folders from localStorage on mount
+    // Load all data from localStorage after mount (to avoid hydration mismatch)
     useEffect(() => {
+        // Load folders (with backward compatibility for kahootIds)
         const savedFolders = localStorage.getItem("youknow_folders")
         if (savedFolders) {
             try {
-                setFolders(JSON.parse(savedFolders))
+                const parsed = JSON.parse(savedFolders)
+                if (Array.isArray(parsed)) {
+                    // Ensure all folders have kahootIds array (backward compatibility)
+                    const foldersWithKahoots = parsed.map((folder: any) => ({
+                        ...folder,
+                        kahootIds: folder.kahootIds || []
+                    }))
+                    setFolders(foldersWithKahoots)
+                }
             } catch (e) {
                 console.error("Error loading folders:", e)
             }
         }
-        foldersLoadedRef.current = true
-    }, [])
 
-    // Save folders to localStorage when they change (only after initial load)
-    useEffect(() => {
-        if (foldersLoadedRef.current) {
-            localStorage.setItem("youknow_folders", JSON.stringify(folders))
-        }
-    }, [folders])
-
-    // Load kahoots from localStorage on mount (with demo data fallback)
-    useEffect(() => {
+        // Load kahoots
         const savedKahoots = localStorage.getItem("youknow_kahoots")
         if (savedKahoots) {
             try {
                 const parsed = JSON.parse(savedKahoots)
-                // Merge demo kahoots with saved (ensure demos are always present)
-                const demoIds = DEMO_KAHOOTS.map(k => k.id)
-                const userKahoots = parsed.filter((k: KahootType) => !demoIds.includes(k.id))
-                setKahoots([...DEMO_KAHOOTS, ...userKahoots])
+                if (Array.isArray(parsed)) {
+                    const demoIds = DEMO_KAHOOTS.map(k => k.id)
+                    const userKahoots = parsed.filter((k: KahootType) => !demoIds.includes(k.id))
+                    setKahoots([...DEMO_KAHOOTS, ...userKahoots])
+                }
             } catch (e) {
                 console.error("Error loading kahoots:", e)
-                setKahoots(DEMO_KAHOOTS)
             }
-        } else {
-            setKahoots(DEMO_KAHOOTS)
         }
+
+        // Load favorites
         const savedFavorites = localStorage.getItem("youknow_kahoot_favorites")
         if (savedFavorites) {
             try {
-                setFavoriteKahoots(new Set(JSON.parse(savedFavorites)))
+                const parsed = JSON.parse(savedFavorites)
+                if (Array.isArray(parsed)) {
+                    setFavoriteKahoots(new Set(parsed))
+                }
             } catch (e) {
                 console.error("Error loading favorites:", e)
             }
         }
-        kahoosLoadedRef.current = true
+
+        // Mark as mounted AFTER loading data
+        setHasMounted(true)
+
+        // Clean up orphaned course IDs (courses that no longer exist)
+        // This runs once after initial load
     }, [])
 
-    // Save kahoots to localStorage when they change (only after initial load)
+    // Auto-cleanup orphaned course/kahoot IDs once after mount
     useEffect(() => {
-        if (kahoosLoadedRef.current) {
+        if (hasMounted) {
+            const validCourseIds = new Set(allCourses.map(c => c.id))
+            const validKahootIds = new Set(kahoots.map(k => k.id))
+            setFolders(prevFolders => {
+                const hasOrphans = prevFolders.some(folder =>
+                    folder.courseIds.some(id => !validCourseIds.has(id)) ||
+                    (folder.kahootIds || []).some(id => !validKahootIds.has(id))
+                )
+                if (hasOrphans) {
+                    return prevFolders.map(folder => ({
+                        ...folder,
+                        courseIds: folder.courseIds.filter(id => validCourseIds.has(id)),
+                        kahootIds: (folder.kahootIds || []).filter(id => validKahootIds.has(id))
+                    }))
+                }
+                return prevFolders
+            })
+        }
+    }, [hasMounted, allCourses, kahoots])
+
+    // Save folders to localStorage when they change (only after mount)
+    useEffect(() => {
+        if (hasMounted) {
+            localStorage.setItem("youknow_folders", JSON.stringify(folders))
+        }
+    }, [folders, hasMounted])
+
+    // Save kahoots to localStorage when they change (only after mount)
+    useEffect(() => {
+        if (hasMounted) {
             localStorage.setItem("youknow_kahoots", JSON.stringify(kahoots))
         }
-    }, [kahoots])
+    }, [kahoots, hasMounted])
 
-    // Save favorites to localStorage
+    // Save favorites to localStorage (only after mount)
     useEffect(() => {
-        localStorage.setItem("youknow_kahoot_favorites", JSON.stringify([...favoriteKahoots]))
-    }, [favoriteKahoots])
+        if (hasMounted) {
+            localStorage.setItem("youknow_kahoot_favorites", JSON.stringify([...favoriteKahoots]))
+        }
+    }, [favoriteKahoots, hasMounted])
 
     // Create new Kahoot
     const handleCreateKahoot = () => {
@@ -549,6 +588,7 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
             name: newFolderName.trim(),
             color: newFolderColor,
             courseIds: [],
+            kahootIds: [],
         }
 
         setFolders([...folders, newFolder])
@@ -566,13 +606,21 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
         }
     }
 
-    // Drag and drop handlers
+    // Drag and drop handlers for courses
     const handleDragStart = (courseId: string) => {
         setDraggedCourseId(courseId)
+        setDraggedKahootId(null)
+    }
+
+    // Drag and drop handlers for kahoots
+    const handleKahootDragStart = (kahootId: string) => {
+        setDraggedKahootId(kahootId)
+        setDraggedCourseId(null)
     }
 
     const handleDragEnd = () => {
         setDraggedCourseId(null)
+        setDraggedKahootId(null)
         setDragOverFolderId(null)
     }
 
@@ -586,15 +634,22 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
     }
 
     const handleDropOnFolder = (folderId: string) => {
-        if (!draggedCourseId) return
+        if (!draggedCourseId && !draggedKahootId) return
 
         setFolders(folders.map(folder => {
             if (folder.id === folderId) {
-                // Add course to folder if not already there
-                if (!folder.courseIds.includes(draggedCourseId)) {
+                // Add course to folder if dragging a course
+                if (draggedCourseId && !folder.courseIds.includes(draggedCourseId)) {
                     return {
                         ...folder,
                         courseIds: [...folder.courseIds, draggedCourseId]
+                    }
+                }
+                // Add kahoot to folder if dragging a kahoot
+                if (draggedKahootId && !folder.kahootIds.includes(draggedKahootId)) {
+                    return {
+                        ...folder,
+                        kahootIds: [...folder.kahootIds, draggedKahootId]
                     }
                 }
             }
@@ -602,6 +657,7 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
         }))
 
         setDraggedCourseId(null)
+        setDraggedKahootId(null)
         setDragOverFolderId(null)
     }
 
@@ -612,6 +668,19 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                 return {
                     ...folder,
                     courseIds: folder.courseIds.filter(id => id !== courseId)
+                }
+            }
+            return folder
+        }))
+    }
+
+    // Remove kahoot from folder
+    const handleRemoveKahootFromFolder = (folderId: string, kahootId: string) => {
+        setFolders(folders.map(folder => {
+            if (folder.id === folderId) {
+                return {
+                    ...folder,
+                    kahootIds: folder.kahootIds.filter(id => id !== kahootId)
                 }
             }
             return folder
@@ -633,6 +702,29 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                     isEnrolled: !!enrollment,
                 }
             })
+    }
+
+    // Get kahoots in selected folder
+    const getKahootsInFolder = (folderId: string) => {
+        const folder = folders.find(f => f.id === folderId)
+        if (!folder) return []
+        return kahoots.filter(kahoot => folder.kahootIds?.includes(kahoot.id))
+    }
+
+    // Get total item count in folder (courses + kahoots)
+    const getFolderItemCount = (folder: FolderType) => {
+        const courseCount = folder.courseIds.filter(id => allCourses.some(c => c.id === id)).length
+        const kahootCount = (folder.kahootIds || []).filter(id => kahoots.some(k => k.id === id)).length
+        return courseCount + kahootCount
+    }
+
+    // Clean up orphaned course IDs from folders
+    const cleanupOrphanedCourses = () => {
+        const validCourseIds = new Set(allCourses.map(c => c.id))
+        setFolders(folders.map(folder => ({
+            ...folder,
+            courseIds: folder.courseIds.filter(id => validCourseIds.has(id))
+        })))
     }
 
     // Sections for left sidebar
@@ -756,7 +848,7 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
     const getEmptyState = () => {
         switch (activeSection) {
             case "kahoots":
-                return { title: "Sin Kahoots", subtitle: "Crea tu primer Kahoot para verlo aquí" }
+                return { title: "Sin Knows", subtitle: "Crea tu primer Know para verlo aquí" }
             case "stories":
                 return { title: "Sin Historias", subtitle: "Crea tu primera historia para verla aquí" }
             case "purchased":
@@ -843,17 +935,14 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                                                         ? "bg-[#46178f]/10 text-[#46178f]"
                                                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                                                 }`}
-                                                onClick={() => {
-                                                    setSelectedFolderId(folder.id)
-                                                    setActiveSection("folder")
-                                                }}
+                                                onClick={() => setSelectedFolderId(folder.id)}
                                                 onDragOver={(e) => handleDragOverFolder(e, folder.id)}
                                                 onDragLeave={handleDragLeaveFolder}
                                                 onDrop={() => handleDropOnFolder(folder.id)}
                                             >
                                                 <Folder className="h-4 w-4" style={{ color: folder.color }} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
-                                                <span className="text-xs text-gray-400 group-hover:hidden">{folder.courseIds.length}</span>
+                                                <span className="text-xs text-gray-400 group-hover:hidden">{getFolderItemCount(folder)}</span>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
@@ -1098,16 +1187,16 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                             </div>
                         )}
 
-                        {/* Kahoots Results Count */}
+                        {/* Knows Results Count */}
                         {activeSection === "kahoots" && (
                             <div className="mb-4">
                                 <p className="text-sm text-gray-500">
-                                    {filteredKahoots.length} {filteredKahoots.length === 1 ? "kahoot" : "kahoots"}
+                                    {filteredKahoots.length} {filteredKahoots.length === 1 ? "know" : "knows"}
                                 </p>
                             </div>
                         )}
 
-                        {/* Kahoots Content Area */}
+                        {/* Knows Content Area */}
                         {activeSection === "kahoots" && (
                             <>
                                 {filteredKahoots.length > 0 ? (
@@ -1123,6 +1212,9 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                                                 onDuplicate={() => handleDuplicateKahoot(kahoot)}
                                                 onDelete={() => handleDeleteKahoot(kahoot.id)}
                                                 onTogglePublish={() => handleTogglePublish(kahoot.id)}
+                                                onDragStart={() => handleKahootDragStart(kahoot.id)}
+                                                onDragEnd={handleDragEnd}
+                                                isDragging={draggedKahootId === kahoot.id}
                                             />
                                         ))}
                                     </div>
@@ -1132,10 +1224,10 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                                             <Sparkles className="h-10 w-10 text-[#46178f]" />
                                         </div>
                                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                                            {kahootTab === "favorites" ? "Sin favoritos" : kahootTab === "drafts" ? "Sin borradores" : kahootTab === "published" ? "Sin publicados" : "Sin Kahoots"}
+                                            {kahootTab === "favorites" ? "Sin favoritos" : kahootTab === "drafts" ? "Sin borradores" : kahootTab === "published" ? "Sin publicados" : "Sin Knows"}
                                         </h3>
                                         <p className="text-gray-500 mb-6">
-                                            {kahootTab === "favorites" ? "Marca kahoots como favoritos para verlos aquí" : "Crea tu primer Kahoot interactivo"}
+                                            {kahootTab === "favorites" ? "Marca knows como favoritos para verlos aquí" : "Crea tu primer Know interactivo"}
                                         </p>
                                         {kahootTab !== "favorites" && isCreator(user.role) && (
                                             <button
@@ -1154,19 +1246,64 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                         {/* Folder Content Area */}
                         {activeSection === "folder" && selectedFolderId && (
                             <>
-                                {getCoursesInFolder(selectedFolderId).length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                        {getCoursesInFolder(selectedFolderId).map((course, index) => (
-                                            <CourseCard
-                                                key={course.id}
-                                                course={course}
-                                                color={getColor(index)}
-                                                lessonCount={getLessonCount(course)}
-                                                t={t}
-                                                showRemoveButton={true}
-                                                onRemove={() => handleRemoveFromFolder(selectedFolderId, course.id)}
-                                            />
-                                        ))}
+                                {!hasMounted ? (
+                                    <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-12 text-center">
+                                        <div className="animate-pulse">
+                                            <div className="h-20 w-20 rounded-full bg-gray-200 dark:bg-gray-700 mx-auto mb-4" />
+                                            <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-2" />
+                                            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mx-auto" />
+                                        </div>
+                                    </div>
+                                ) : (getCoursesInFolder(selectedFolderId).length > 0 || getKahootsInFolder(selectedFolderId).length > 0) ? (
+                                    <div className="space-y-6">
+                                        {/* Knows in Folder */}
+                                        {getKahootsInFolder(selectedFolderId).length > 0 && (
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                    <Sparkles className="h-4 w-4" />
+                                                    Knows ({getKahootsInFolder(selectedFolderId).length})
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                                    {getKahootsInFolder(selectedFolderId).map((kahoot) => (
+                                                        <KahootCard
+                                                            key={kahoot.id}
+                                                            kahoot={kahoot}
+                                                            isFavorite={favoriteKahoots.has(kahoot.id)}
+                                                            menuOpen={kahootMenuOpen === kahoot.id}
+                                                            onMenuToggle={() => setKahootMenuOpen(kahootMenuOpen === kahoot.id ? null : kahoot.id)}
+                                                            onToggleFavorite={() => handleToggleFavorite(kahoot.id)}
+                                                            onDuplicate={() => handleDuplicateKahoot(kahoot)}
+                                                            onDelete={() => handleDeleteKahoot(kahoot.id)}
+                                                            onTogglePublish={() => handleTogglePublish(kahoot.id)}
+                                                            showRemoveButton={true}
+                                                            onRemove={() => handleRemoveKahootFromFolder(selectedFolderId, kahoot.id)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {/* Courses in Folder */}
+                                        {getCoursesInFolder(selectedFolderId).length > 0 && (
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                    <Layers className="h-4 w-4" />
+                                                    Cursos ({getCoursesInFolder(selectedFolderId).length})
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                                    {getCoursesInFolder(selectedFolderId).map((course, index) => (
+                                                        <CourseCard
+                                                            key={course.id}
+                                                            course={course}
+                                                            color={getColor(index)}
+                                                            lessonCount={getLessonCount(course)}
+                                                            t={t}
+                                                            showRemoveButton={true}
+                                                            onRemove={() => handleRemoveFromFolder(selectedFolderId, course.id)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <EmptyState
@@ -1205,6 +1342,9 @@ export function CoursesClient({ user, allCourses, onSignOut }: CoursesClientProp
                                             color={getColor(index)}
                                             lessonCount={getLessonCount(course)}
                                             t={t}
+                                            onDragStart={() => handleDragStart(course.id)}
+                                            onDragEnd={handleDragEnd}
+                                            isDragging={draggedCourseId === course.id}
                                         />
                                     ))}
                                 </div>
@@ -1483,7 +1623,12 @@ function KahootCard({
     onToggleFavorite,
     onDuplicate,
     onDelete,
-    onTogglePublish
+    onTogglePublish,
+    onDragStart,
+    onDragEnd,
+    isDragging,
+    showRemoveButton,
+    onRemove
 }: {
     kahoot: KahootType
     isFavorite: boolean
@@ -1493,6 +1638,11 @@ function KahootCard({
     onDuplicate: () => void
     onDelete: () => void
     onTogglePublish: () => void
+    onDragStart?: () => void
+    onDragEnd?: () => void
+    isDragging?: boolean
+    showRemoveButton?: boolean
+    onRemove?: () => void
 }) {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
@@ -1500,7 +1650,12 @@ function KahootCard({
     }
 
     return (
-        <div className="group bg-white dark:bg-[#1e1e1e] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <div
+            draggable={!!onDragStart}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            className={`group bg-white dark:bg-[#1e1e1e] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${isDragging ? "opacity-50 scale-95" : ""}`}
+        >
             {/* Color Header */}
             <div className="h-32 relative" style={{ backgroundColor: kahoot.color }}>
                 {/* Pattern */}
@@ -1627,12 +1782,26 @@ function KahootCard({
                     <span className="text-xs text-gray-400">
                         {formatDate(kahoot.updatedAt)}
                     </span>
-                    <Link href={`/kahoot/${kahoot.id}/edit`}>
-                        <button className="flex items-center gap-1 text-xs font-medium text-[#46178f] hover:underline">
-                            <Edit3 className="h-3 w-3" />
-                            Editar
-                        </button>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        {showRemoveButton && onRemove && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    onRemove()
+                                }}
+                                className="flex items-center gap-1 text-xs font-medium text-red-500 hover:underline"
+                            >
+                                <X className="h-3 w-3" />
+                                Quitar
+                            </button>
+                        )}
+                        <Link href={`/kahoot/${kahoot.id}/edit`}>
+                            <button className="flex items-center gap-1 text-xs font-medium text-[#46178f] hover:underline">
+                                <Edit3 className="h-3 w-3" />
+                                Editar
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1828,14 +1997,36 @@ function CourseCard({
 }
 
 // Course List Item Component - Kahoot Style
-function CourseListItem({ course, color, lessonCount, t }: { course: any; color: string; lessonCount: number; t: any }) {
+function CourseListItem({
+    course,
+    color,
+    lessonCount,
+    t,
+    onDragStart,
+    onDragEnd,
+    isDragging
+}: {
+    course: any
+    color: string
+    lessonCount: number
+    t: any
+    onDragStart?: () => void
+    onDragEnd?: () => void
+    isDragging?: boolean
+}) {
     const progress = course.enrollment?.progressPercent || 0
     const isCompleted = progress === 100
     const isEnrolled = course.isEnrolled
 
     return (
-        <Link href={isEnrolled ? `/learn/${course.slug}` : `/courses/${course.slug}`}>
-            <div className="group bg-white dark:bg-[#1e1e1e] rounded-xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+        <div
+            draggable={!!onDragStart}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            className={`${isDragging ? "opacity-50 scale-95" : ""} transition-all`}
+        >
+            <Link href={isEnrolled ? `/learn/${course.slug}` : `/courses/${course.slug}`}>
+                <div className="group bg-white dark:bg-[#1e1e1e] rounded-xl p-4 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
                 {/* Color Thumbnail */}
                 <div
                     className="h-16 w-20 rounded-lg flex-shrink-0 flex items-center justify-center relative overflow-hidden"
@@ -1903,6 +2094,7 @@ function CourseListItem({ course, color, lessonCount, t }: { course: any; color:
                     {isEnrolled ? (isCompleted ? t.common.view : t.library.card.continue) : t.library.card.start}
                 </button>
             </div>
-        </Link>
+            </Link>
+        </div>
     )
 }

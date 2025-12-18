@@ -272,7 +272,7 @@ export const es = {
         items: "elementos",
         item: "elemento",
         sections: {
-            kahoots: "Kahoots",
+            kahoots: "Knows",
             stories: "Historias",
             courses: "Cursos",
             purchased: "Contenido comprado",
@@ -570,7 +570,7 @@ export const en = {
         items: "items",
         item: "item",
         sections: {
-            kahoots: "Kahoots",
+            kahoots: "Knows",
             stories: "Stories",
             courses: "Courses",
             purchased: "Purchased content",
