@@ -117,3 +117,15 @@ export function DropdownMenuItem({
         </button>
     )
 }
+
+export function DropdownMenuSeparator({ className }: { className?: string }) {
+    return (
+        <div
+            className={cn(
+                "my-1 h-px bg-gray-200 dark:bg-gray-700",
+                className
+            )}
+            role="separator"
+        />
+    )
+}

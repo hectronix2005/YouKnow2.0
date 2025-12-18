@@ -6,15 +6,18 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { AlertCircle } from "lucide-react"
 
 export default function CreateCoursePage() {
     const router = useRouter()
     const [title, setTitle] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setError(null)
 
         try {
             const response = await fetch("/api/courses", {
@@ -23,13 +26,17 @@ export default function CreateCoursePage() {
                 body: JSON.stringify({ title })
             })
 
-            if (!response.ok) throw new Error("Failed to create course")
+            const data = await response.json()
 
-            const course = await response.json()
-            router.push(`/creador/courses/${course.id}`)
+            if (!response.ok) {
+                setError(data.error || "Error al crear el curso")
+                return
+            }
+
+            router.push(`/creador/courses/${data.id}`)
         } catch (error) {
             console.error(error)
-            // Show error toast
+            setError("Error de conexión. Intenta de nuevo.")
         } finally {
             setIsLoading(false)
         }
@@ -37,17 +44,24 @@ export default function CreateCoursePage() {
 
     return (
         <div className="max-w-2xl mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-6">Name your course</h1>
+            <h1 className="text-2xl font-bold mb-6">Nombra tu curso</h1>
             <p className="text-gray-500 mb-8">
-                What would you like to name your course? Don't worry, you can change this later.
+                ¿Cómo quieres llamar a tu curso? No te preocupes, puedes cambiarlo después.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-8">
+                {error && (
+                    <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
+                        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                        <span>{error}</span>
+                    </div>
+                )}
+
                 <div className="space-y-2">
-                    <Label htmlFor="title">Course Title</Label>
+                    <Label htmlFor="title">Título del curso</Label>
                     <Input
                         id="title"
-                        placeholder="e.g. Advanced Web Development"
+                        placeholder="ej. Desarrollo Web Avanzado"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         required
@@ -57,11 +71,11 @@ export default function CreateCoursePage() {
                 <div className="flex items-center gap-4">
                     <Link href="/creador">
                         <Button type="button" variant="ghost">
-                            Cancel
+                            Cancelar
                         </Button>
                     </Link>
                     <Button type="submit" disabled={!title || isLoading}>
-                        {isLoading ? "Creating..." : "Continue"}
+                        {isLoading ? "Creando..." : "Continuar"}
                     </Button>
                 </div>
             </form>

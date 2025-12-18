@@ -1,39 +1,56 @@
 @import "tailwindcss";
 
-:root {
-  /* Base Colors - Light */
-  --background: #ffffff;
-  --foreground: #111827;
+/* Enable class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
 
-  /* Brand Colors */
-  --primary: #6366f1;
+:root {
+  /* Base Colors - Light (Kahoot uses very light gray) */
+  --background: #f2f2f2;
+  --foreground: #333333;
+
+  /* Kahoot-style Brand Colors */
+  --primary: #46178f;
   --primary-foreground: #ffffff;
-  --secondary: #8b5cf6;
+  --secondary: #1368ce;
   --secondary-foreground: #ffffff;
 
-  /* Status Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  /* Kahoot Vibrant Colors */
+  --kahoot-purple: #46178f;
+  --kahoot-blue: #1368ce;
+  --kahoot-green: #26890c;
+  --kahoot-red: #e21b3c;
+  --kahoot-orange: #d89e00;
+  --kahoot-cyan: #00cec8;
+
+  /* Status Colors - Kahoot style */
+  --success: #26890c;
+  --warning: #d89e00;
+  --error: #e21b3c;
 
   /* UI Colors */
-  --surface: #f9fafb;
-  --border: #e5e7eb;
+  --surface: #ffffff;
+  --border: #e5e5e5;
+
+  /* Gradient */
+  --gradient-start: #46178f;
+  --gradient-end: #1368ce;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Base Colors - Dark */
-    --background: #030712;
-    /* Gray 950 */
-    --foreground: #f9fafb;
-    /* Gray 50 */
+/* Dark mode via class */
+.dark {
+  --background: #121212;
+  --foreground: #f5f5f7;
+  --surface: #1e1e1e;
+  --border: #333333;
+}
 
-    /* UI Colors - Dark */
-    --surface: #111827;
-    /* Gray 900 */
-    --border: #1f2937;
-    /* Gray 800 */
+/* Dark mode via system preference (fallback) */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #121212;
+    --foreground: #f5f5f7;
+    --surface: #1e1e1e;
+    --border: #333333;
   }
 }
 
@@ -54,14 +71,31 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+
+  /* Kahoot Colors */
+  --color-kahoot-purple: var(--kahoot-purple);
+  --color-kahoot-blue: var(--kahoot-blue);
+  --color-kahoot-green: var(--kahoot-green);
+  --color-kahoot-red: var(--kahoot-red);
+  --color-kahoot-orange: var(--kahoot-orange);
+  --color-kahoot-cyan: var(--kahoot-cyan);
 }
 
 /* Base Styles */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
   -moz-osx-font-smoothing: grayscale;
 }
 
@@ -117,10 +151,115 @@ code, kbd, pre, samp {
   }
 }
 
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(70, 23, 143, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(70, 23, 143, 0.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
 
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
+}
+
+.animate-bounce-subtle {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-pop {
+  animation: pop 0.3s ease-out;
+}
+
+/* Kahoot-style hover effects */
+.kahoot-card {
+  transition: all 0.2s ease;
+}
+
+.kahoot-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(70, 23, 143, 0.15);
+}
+
+.kahoot-button {
+  transition: all 0.15s ease;
+  border-radius: 40px;
+}
+
+.kahoot-button:hover {
+  transform: scale(1.05);
+}
+
+.kahoot-button:active {
+  transform: scale(0.98);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--kahoot-purple) 0%, var(--kahoot-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Vibrant shadows */
+.shadow-kahoot-purple {
+  box-shadow: 0 8px 30px rgba(70, 23, 143, 0.25);
+}
+
+.shadow-kahoot-blue {
+  box-shadow: 0 8px 30px rgba(19, 104, 206, 0.25);
+}
+
+.shadow-kahoot-green {
+  box-shadow: 0 8px 30px rgba(38, 137, 12, 0.25);
+}
+
+.shadow-kahoot-red {
+  box-shadow: 0 8px 30px rgba(226, 27, 60, 0.25);
 }

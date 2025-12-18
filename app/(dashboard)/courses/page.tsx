@@ -11,13 +11,51 @@ export default async function CoursesPage() {
         redirect("/login")
     }
 
-    // Get all published courses
-    const courses = await prisma.course.findMany({
+    // Get user with enrollments
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        include: {
+            enrollments: {
+                include: {
+                    course: {
+                        include: {
+                            instructor: true,
+                            modules: {
+                                include: {
+                                    lessons: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: {
+                    lastAccessedAt: "desc",
+                },
+            },
+        },
+    })
+
+    if (!user) {
+        redirect("/login")
+    }
+
+    // Get all published courses for discovery
+    const allCourses = await prisma.course.findMany({
         where: {
             status: "published",
         },
         include: {
             instructor: true,
+            modules: {
+                include: {
+                    lessons: true,
+                },
+            },
+            _count: {
+                select: {
+                    enrollments: true,
+                },
+            },
         },
         orderBy: {
             publishedAt: "desc",
@@ -29,5 +67,5 @@ export default async function CoursesPage() {
         await signOut()
     }
 
-    return <CoursesClient user={session.user} courses={courses} onSignOut={handleSignOut} />
+    return <CoursesClient user={user} allCourses={allCourses} onSignOut={handleSignOut} />
 }

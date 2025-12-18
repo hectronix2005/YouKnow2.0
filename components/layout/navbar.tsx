@@ -69,98 +69,112 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
     }
 
     return (
-        <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/80">
+        <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-lg dark:border-gray-800 dark:bg-[#1a1a1a]/95 shadow-sm">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
-                    {/* Logo */}
-                    <Link href={user ? "/dashboard" : "/"} className="flex items-center space-x-2 group">
+                    {/* Logo - Kahoot Style */}
+                    <Link href={user ? "/dashboard" : "/"} className="flex items-center space-x-3 group">
                         <div className="relative">
-                            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur transition duration-200 group-hover:opacity-100" />
-                            <GraduationCap className="relative h-8 w-8 text-white" />
+                            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-[#46178f] to-[#1368ce] opacity-90 blur-sm transition duration-200 group-hover:opacity-100 group-hover:blur" />
+                            <div className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-[#46178f] to-[#1368ce] flex items-center justify-center shadow-lg">
+                                <GraduationCap className="h-6 w-6 text-white" />
+                            </div>
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                        <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-[#46178f] to-[#1368ce] dark:from-[#8b5cf6] dark:to-[#00cec8]">
                             YouKnow
                         </span>
                     </Link>
 
-                    {/* Navigation - based on ACTIVE role */}
+                    {/* Navigation - Kahoot Style Pills */}
                     {user && (
-                        <div className="hidden md:flex md:items-center md:space-x-1">
+                        <div className="hidden md:flex md:items-center md:space-x-2">
                             {/* Level 1+: Dashboard */}
                             <Link href="/dashboard">
-                                <Button
-                                    variant={isActive("/dashboard") ? "secondary" : "ghost"}
-                                    size="sm"
-                                    className={isActive("/dashboard") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                <button
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all duration-200 ${
+                                        isActive("/dashboard")
+                                            ? "bg-[#46178f] text-white shadow-[0_4px_14px_rgba(70,23,143,0.4)]"
+                                            : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                    }`}
                                 >
-                                    <Home className="mr-2 h-4 w-4" />
+                                    <Home className="h-4 w-4" />
                                     {t.nav.dashboard}
-                                </Button>
+                                </button>
                             </Link>
 
                             {/* Level 1+: Courses */}
                             <Link href="/courses">
-                                <Button
-                                    variant={isActive("/courses") ? "secondary" : "ghost"}
-                                    size="sm"
-                                    className={isActive("/courses") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                <button
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all duration-200 ${
+                                        isActive("/courses")
+                                            ? "bg-[#e21b3c] text-white shadow-[0_4px_14px_rgba(226,27,60,0.4)]"
+                                            : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                    }`}
                                 >
-                                    <BookOpen className="mr-2 h-4 w-4" />
+                                    <BookOpen className="h-4 w-4" />
                                     {t.nav.courses}
-                                </Button>
+                                </button>
                             </Link>
 
                             {/* Level 1+: Checklist */}
                             <Link href="/checklist">
-                                <Button
-                                    variant={isActive("/checklist") ? "secondary" : "ghost"}
-                                    size="sm"
-                                    className={isActive("/checklist") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                <button
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all duration-200 ${
+                                        isActive("/checklist")
+                                            ? "bg-[#d89e00] text-white shadow-[0_4px_14px_rgba(216,158,0,0.4)]"
+                                            : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                    }`}
                                 >
-                                    <CheckSquare className="mr-2 h-4 w-4" />
+                                    <CheckSquare className="h-4 w-4" />
                                     {t.nav.checklist}
-                                </Button>
+                                </button>
                             </Link>
 
                             {/* Level 2+: Creador - based on ACTIVE role */}
                             {isCreator(activeRole) && (
                                 <Link href="/creador">
-                                    <Button
-                                        variant={isActive("/creador") ? "secondary" : "ghost"}
-                                        size="sm"
-                                        className={isActive("/creador") ? "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300" : ""}
+                                    <button
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all duration-200 ${
+                                            isActive("/creador")
+                                                ? "bg-[#1368ce] text-white shadow-[0_4px_14px_rgba(19,104,206,0.4)]"
+                                                : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                        }`}
                                     >
-                                        <Palette className="mr-2 h-4 w-4" />
+                                        <Palette className="h-4 w-4" />
                                         Creador
-                                    </Button>
+                                    </button>
                                 </Link>
                             )}
 
                             {/* Level 3+: Lider - based on ACTIVE role */}
                             {isLeader(activeRole) && (
                                 <Link href="/lider">
-                                    <Button
-                                        variant={isActive("/lider") ? "secondary" : "ghost"}
-                                        size="sm"
-                                        className={isActive("/lider") ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300" : ""}
+                                    <button
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all duration-200 ${
+                                            isActive("/lider")
+                                                ? "bg-[#26890c] text-white shadow-[0_4px_14px_rgba(38,137,12,0.4)]"
+                                                : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                        }`}
                                     >
-                                        <Users className="mr-2 h-4 w-4" />
+                                        <Users className="h-4 w-4" />
                                         {t.nav.lider}
-                                    </Button>
+                                    </button>
                                 </Link>
                             )}
 
                             {/* Level 4+: Admin - based on ACTIVE role */}
                             {isAdmin(activeRole) && (
                                 <Link href="/admin/users">
-                                    <Button
-                                        variant={isActive("/admin") ? "secondary" : "ghost"}
-                                        size="sm"
-                                        className={isActive("/admin") ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" : ""}
+                                    <button
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all duration-200 ${
+                                            isActive("/admin")
+                                                ? "bg-[#00cec8] text-white shadow-[0_4px_14px_rgba(0,206,200,0.4)]"
+                                                : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                        }`}
                                     >
-                                        <ShieldCheck className="mr-2 h-4 w-4" />
+                                        <ShieldCheck className="h-4 w-4" />
                                         Admin
-                                    </Button>
+                                    </button>
                                 </Link>
                             )}
                         </div>
@@ -266,27 +280,25 @@ export function Navbar({ user, onSignOut }: NavbarProps) {
                                         )}
                                     </div>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
+                                <button
                                     onClick={onSignOut}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm text-[#e21b3c] hover:bg-[#e21b3c] hover:text-white transition-all duration-200"
                                 >
                                     <LogOut className="h-4 w-4" />
-                                    <span className="hidden sm:inline ml-2">{t.auth.logout}</span>
-                                </Button>
+                                    <span className="hidden sm:inline">{t.auth.logout}</span>
+                                </button>
                             </>
                         ) : (
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3">
                                 <Link href="/login">
-                                    <Button variant="ghost" size="sm">
+                                    <button className="px-5 py-2 rounded-full font-bold text-sm text-[#46178f] hover:bg-[#46178f]/10 transition-all duration-200">
                                         {t.auth.login}
-                                    </Button>
+                                    </button>
                                 </Link>
                                 <Link href="/register">
-                                    <Button variant="primary" size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-200">
+                                    <button className="px-5 py-2 rounded-full font-bold text-sm bg-gradient-to-r from-[#46178f] to-[#1368ce] text-white shadow-[0_4px_14px_rgba(70,23,143,0.4)] hover:shadow-[0_6px_20px_rgba(70,23,143,0.5)] hover:scale-105 transition-all duration-200">
                                         {t.auth.register}
-                                    </Button>
+                                    </button>
                                 </Link>
                             </div>
                         )}

@@ -14,11 +14,9 @@ export default async function CreadorDashboardPage() {
         redirect("/login")
     }
 
-    // Check if user is lider (or allow everyone to be lider for MVP)
-    // For MVP, we'll assume everyone can create courses or check role
+    // Check if user is creator or higher
     if (!isCreator(session.user.role)) {
-        // Optional: Redirect to become lider page or just allow it
-        // redirect("/dashboard")
+        redirect("/dashboard")
     }
 
     // Leaders and admins can see all courses, regular instructors only see their own

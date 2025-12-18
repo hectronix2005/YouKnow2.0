@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth"
-import { isLeader } from "@/lib/teacher"
+import { isCreator } from "@/lib/teacher"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
 import { generateUniqueSlug } from "@/lib/utils"
@@ -8,8 +8,8 @@ export async function POST(req: Request) {
     try {
         const session = await auth()
 
-        if (!session?.user || !isLeader(session.user.role)) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        if (!session?.user || !isCreator(session.user.role)) {
+            return NextResponse.json({ error: "Necesitas rol de Creador o superior para crear cursos" }, { status: 403 })
         }
 
         const { title } = await req.json()

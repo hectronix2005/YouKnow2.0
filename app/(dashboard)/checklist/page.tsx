@@ -14,6 +14,7 @@ export default async function ChecklistPage() {
         <ChecklistDashboard
             userId={session.user.id}
             userName={session.user.name || "Usuario"}
+            userEmail={session.user.email || ""}
             userRole={session.user.role}
         />
     )
