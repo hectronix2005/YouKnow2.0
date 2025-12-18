@@ -130,11 +130,14 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
                     </div>
                 </Link>
 
+                {/* Separator before logout */}
+                <div className="w-10 h-px bg-white/20 my-2" />
+
                 {onSignOut && (
                     <button onClick={onSignOut} className="w-full group">
-                        <div className="flex flex-col items-center justify-center py-3 px-1 rounded-xl text-white/70 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200">
+                        <div className="flex flex-col items-center justify-center py-3 px-1 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/40 hover:text-white transition-all duration-200 border border-red-500/30">
                             <LogOut className="h-5 w-5 mb-1" />
-                            <span className="text-[10px] font-medium">{t.sidebar.logout}</span>
+                            <span className="text-[10px] font-bold">{t.sidebar.logout}</span>
                         </div>
                     </button>
                 )}
