@@ -52,46 +52,46 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
     ]
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-[72px] bg-[#46178f] flex flex-col items-center py-4 shadow-xl">
+        <aside className="fixed left-0 top-0 z-40 h-screen w-[72px] bg-[#46178f] flex flex-col items-center py-3 shadow-xl overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             {/* Logo */}
-            <Link href="/dashboard" className="mb-6">
-                <div className="h-12 w-12 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200">
-                    <span className="text-2xl font-black text-white">Y</span>
+            <Link href="/dashboard" className="mb-4 flex-shrink-0">
+                <div className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200">
+                    <span className="text-xl font-black text-white">Y</span>
                 </div>
             </Link>
 
             {/* Create Button - Solo para creadores o superior */}
             {isCreator(user.role) && (
-                <Link href="/creador/create" className="mb-6">
-                    <button className="h-12 w-12 rounded-xl bg-[#26890c] hover:bg-[#2ea00f] flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-[0_4px_14px_rgba(38,137,12,0.5)] hover:scale-105">
-                        <Plus className="h-6 w-6 text-white" strokeWidth={3} />
+                <Link href="/creador/create" className="mb-4 flex-shrink-0">
+                    <button className="h-10 w-10 rounded-xl bg-[#26890c] hover:bg-[#2ea00f] flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-[0_4px_14px_rgba(38,137,12,0.5)] hover:scale-105">
+                        <Plus className="h-5 w-5 text-white" strokeWidth={3} />
                     </button>
                 </Link>
             )}
 
             {/* Main Navigation */}
-            <nav className="flex-1 flex flex-col items-center gap-1 w-full px-2">
+            <nav className="flex-1 flex flex-col items-center gap-0.5 w-full px-2 min-h-0">
                 {mainNavItems.map((item) => {
                     const Icon = item.icon
                     const active = isActive(item.href)
                     return (
                         <Link key={item.href} href={item.href} className="w-full group">
                             <div
-                                className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl transition-all duration-200 ${
+                                className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-200 ${
                                     active
                                         ? "bg-white/20 text-white"
                                         : "text-white/70 hover:bg-white/10 hover:text-white"
                                 }`}
                             >
-                                <Icon className="h-5 w-5 mb-1" />
-                                <span className="text-[10px] font-medium truncate">{item.label}</span>
+                                <Icon className="h-4 w-4 mb-0.5" />
+                                <span className="text-[9px] font-medium truncate">{item.label}</span>
                             </div>
                         </Link>
                     )
                 })}
 
                 {/* Separator */}
-                <div className="w-10 h-px bg-white/20 my-3" />
+                <div className="w-8 h-px bg-white/20 my-2 flex-shrink-0" />
 
                 {/* Secondary Navigation */}
                 {secondaryNavItems.filter(item => item.show).map((item) => {
@@ -100,14 +100,14 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
                     return (
                         <Link key={item.href} href={item.href} className="w-full group">
                             <div
-                                className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl transition-all duration-200 ${
+                                className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-200 ${
                                     active
                                         ? "bg-white/20 text-white"
                                         : "text-white/70 hover:bg-white/10 hover:text-white"
                                 }`}
                             >
-                                <Icon className="h-5 w-5 mb-1" />
-                                <span className="text-[10px] font-medium truncate">{item.label}</span>
+                                <Icon className="h-4 w-4 mb-0.5" />
+                                <span className="text-[9px] font-medium truncate">{item.label}</span>
                             </div>
                         </Link>
                     )
@@ -115,29 +115,29 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
             </nav>
 
             {/* Bottom Actions */}
-            <div className="flex flex-col items-center gap-1 w-full px-2 mt-auto">
+            <div className="flex flex-col items-center gap-0.5 w-full px-2 mt-auto pt-2 flex-shrink-0">
                 <Link href="/settings" className="w-full group">
-                    <div className="flex flex-col items-center justify-center py-3 px-1 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200">
-                        <Settings className="h-5 w-5 mb-1" />
-                        <span className="text-[10px] font-medium">{t.sidebar.settings}</span>
+                    <div className="flex flex-col items-center justify-center py-2 px-1 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200">
+                        <Settings className="h-4 w-4 mb-0.5" />
+                        <span className="text-[9px] font-medium">{t.sidebar.settings}</span>
                     </div>
                 </Link>
 
                 <Link href="/help" className="w-full group">
-                    <div className="flex flex-col items-center justify-center py-3 px-1 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200">
-                        <HelpCircle className="h-5 w-5 mb-1" />
-                        <span className="text-[10px] font-medium">{t.sidebar.help}</span>
+                    <div className="flex flex-col items-center justify-center py-2 px-1 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200">
+                        <HelpCircle className="h-4 w-4 mb-0.5" />
+                        <span className="text-[9px] font-medium">{t.sidebar.help}</span>
                     </div>
                 </Link>
 
                 {/* Separator before logout */}
-                <div className="w-10 h-px bg-white/20 my-2" />
+                <div className="w-8 h-px bg-white/20 my-1 flex-shrink-0" />
 
                 {onSignOut && (
-                    <button onClick={onSignOut} className="w-full group">
-                        <div className="flex flex-col items-center justify-center py-3 px-1 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/40 hover:text-white transition-all duration-200 border border-red-500/30">
-                            <LogOut className="h-5 w-5 mb-1" />
-                            <span className="text-[10px] font-bold">{t.sidebar.logout}</span>
+                    <button onClick={onSignOut} className="w-full group mb-1">
+                        <div className="flex flex-col items-center justify-center py-2 px-1 rounded-lg bg-red-500/30 text-red-200 hover:bg-red-500/50 hover:text-white transition-all duration-200 border border-red-400/40">
+                            <LogOut className="h-4 w-4 mb-0.5" />
+                            <span className="text-[9px] font-bold">{t.sidebar.logout}</span>
                         </div>
                     </button>
                 )}
